@@ -11,7 +11,7 @@ This repo contains the source code for PCA on river networks. Especially, it ana
   - **pca_river.R** is a main code for the data analysis.
 
 - stpca_Rpackage
-  - R package from "Flow-directed PCA". 
+  - R package from "Flow-directed PCA (Gallacher et al., 2017)". 
   - It is used to implement PCA on spatiotemporal data with adjustment for spatial / temporal autocorrelation. 
 
 

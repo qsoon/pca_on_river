@@ -11,8 +11,8 @@ This repo contains the source code for PCA on river networks. Especially, it ana
   - `pca_river.R` is a main code for the data analysis.
 
 - Data
-  - `KRF_3.0_Geumgang` contains shape files related to the Geum River such as catchment area shape, line shape, nodes.
-  - `ProcessedData` contains processed TOC data for Geum River.
+  - `KRF_3.0_Geumgang` contains shape files related to the Geum River such as catchment area shape, line shape, nodes. They can be downloaded from [Korean Reach File](http://water.nier.go.kr/web/gisKrf?pMENU_NO=89).
+  - `ProcessedData` contains processed TOC data for Geum River. The original TOC data can be obtained from [Water Environment Information System](http://water.nier.go.kr/web/waterMeasure?pMENU_NO=2). 
   
 - stpca_Rpackage
   - R package from "Flow-directed PCA (Gallacher et al., 2017)". 

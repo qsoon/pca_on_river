@@ -1,0 +1,37 @@
+Package: stpca
+Type: Package
+Title: Tools To Investigate Reducing Monitoring Networks
+Version: 0.1
+Date: 2016-03-23
+Authors@R: c(person("Kelly", "Gallacher", email = "kelly_gallacher@hotmail.com",
+                  role = c("aut", "cre")),
+           person("Claire", "Miller", email = "Claire.Miller@glasgow.ac.uk",
+                  role = c("aut")),
+           person("Marian", "Scott", email = "Marian.Scott@glasgow.ac.uk",
+                  role = c("aut")))
+Author: Kelly Gallacher [aut, cre],
+  Claire Miller [aut],
+  Marian Scott [aut]
+Maintainer: Kelly Gallacher <kelly_gallacher@hotmail.com>
+Description: This package consists of functions that can be used to investigate
+    re-designing monitoring networks, with particular emphasis on river networks.
+    For spatiotemporal data this package will allow users to identify areas of
+    the river network where observatations have remained stable over time, and
+    also identify groups of monitoring sites with similar behaviour over time.
+    Weights can be incorporated to adjust for spatial and temporal correlation.
+    For spatial data, this package will allow users to investigate how reducing
+    the size of the monitoring network affects predictions at unobserved locations,
+    and also how the choice of sampling scheme affects predictions.  Many of the
+    functions in this package are wrappers for functions from other packages and
+    these are referenced throughout the help files.
+License: CC0
+LazyData: TRUE
+RoxygenNote: 5.0.1
+Suggests: knitr, maptools, rmarkdown, testthat
+Depends: R (>= 3.2.0)
+Imports: expm, geoR, graphics, grDevices, GWmodel, matrixcalc, Matrix,
+        missMDA, sampling, sp, SSN
+VignetteBuilder: knitr
+NeedsCompilation: no
+Packaged: 2016-04-28 14:47:22 UTC; 0603144g
+Built: R 3.2.3; ; 2016-04-28 14:53:10 UTC; windows

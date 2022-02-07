@@ -1,0 +1,18 @@
+completeData            Wrapper function for 'missMDA' package to
+                        impute missing values
+createWeightS           Create an asymmetric matrix of spatial weights
+                        from an 'SSN' object.
+createWeightT           Create a matrix of temporal weights.
+demoNet                 Simulated observations of a single water
+                        quality parameter on a river network.
+demoY                   Spatiotemporal observations of a single water
+                        quality parameter.
+demoYmiss               Spatiotemporal observations of a single water
+                        quality parameter.
+plot_sampNet            Plot the results from 'sampNet'
+plot_stpca              Visualize (weighted) PCA results.
+sampDemo                Sampled networks from 'demoNet'
+sampNet                 Create sampled networks.
+stpca                   Perform PCA to identify common spatiotemporal
+                        patterns, adjusting for spatial and/or temporal
+                        autocorrelation where appropriate.

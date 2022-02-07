@@ -16,7 +16,7 @@ This repo contains the source code for PCA on river networks. Especially, it ana
 
 
 ### Code overview
-The process described in **pca_river.R" is as follows.
+The process described in **pca_river.R** is as follows.
 
 - Data load / preprocessing
 - Weight construction

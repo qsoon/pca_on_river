@@ -9,7 +9,7 @@ library(ggdendro)
 #############################
 ## load Geum River network ##
 #############################
-shape_Geum <- readOGR("/home/kyu9510/pca_on_river/Data/Geum.shp")
+shape_Geum <- readOGR("/home/kyu9510/pca_on_river/Data/ProcessedData/Geum.shp")
 
 source("/home/kyu9510/pca_on_river/Code/source.R", chdir = TRUE)
 binaryIDs_obj <- get_binaryIDs_stream(mouth_node=614 , shape_Geum) # defined in source.R, shape file needs RCH_ID, binaryID
@@ -40,7 +40,7 @@ rownames(spatial.wt_Geum) <-
 ##############################
 ## data load and preprocess ##
 ##############################
-data <- readRDS("/home/kyu9510/pca_on_river/Data/Geum2020(extended).RDS")
+data <- readRDS("/home/kyu9510/pca_on_river/Data/ProcessedData/Geum2020(extended).RDS")
 # TN: Total nitrogen
 # temp: Water temperature 
 # ph: Hydrogen ion concentration
@@ -210,7 +210,7 @@ par(mfrow=c(1,1),mar=c(5,5,5,5))
 Y_avg_TOC_log_summer.Tmode.pca.all$spatial$loads[,2] <- -Y_avg_TOC_log_summer.Tmode.pca.all$spatial$loads[,2]
 Y_avg_TOC_log_summer.Tmode.pca.all$spatial$scores[,2] <- -Y_avg_TOC_log_summer.Tmode.pca.all$spatial$scores[,2]
 
-plot_river(Y_avg_TOC_log_summer.Tmode.pca.all, plots="biplot", biplot.factor=30)
+plot_river(Y_avg_TOC_log_summer.Tmode.pca.all, river = shape_Geum, plots="biplot", biplot.factor=30)
 
 # glyph plot
 par(mfrow=c(1,1),mar=c(4.5,4.5,4.5,4.5))
@@ -227,6 +227,7 @@ plot_stpca_zoom(x = Y_avg_TOC_log_summer.Tmode.pca.all, plots = "glyph",
 ##################
 ## PCA on river ##
 ##################
+# spatial and temporal weights
 sp.wt <- expm::sqrtm(solve(spatial.wt_Geum))
 
 t.wt <- solve(expm::sqrtm(t(annually_temporal_summer.wt_Geum)))
@@ -274,7 +275,7 @@ summary(pca.river.basic$local.PV[,1] + pca.river.basic$local.PV[,2] + pca.river.
 loadings.pc2.pca.river.basic <- pca.river.basic$loadings[,,2]
 loadings.pc12.pca.river.basic <- cbind(loadings.pc1.pca.river.basic, loadings.pc2.pca.river.basic)
 
-
+# ward clustering result 
 par(mfrow=c(2,2))
 
 hc.ward <- hclust(dist(loadings.pc12.pca.river.basic), method='ward.D2')
@@ -300,7 +301,7 @@ for(i in c(2,4,5)){
   
 }
 
-
+# k = 2 case 
 n.cls <- 2
 sub_grp <- cutree(hc.ward, k=n.cls) 
 dls$cluster.pca.river.pc12 <- sub_grp
@@ -315,7 +316,7 @@ Y_avg_TOC_log_summer.Tmode.pca.all$riverpca$loadings <- pca.river.basic$loadings
 Y_avg_TOC_log_summer.Tmode.pca.all$riverpca$scores <- matrix(unlist(pca.river.basic$pca.river.scores), ncol=6, byrow=T)
 
 
-# show local loading glyphs for PC 1 and 2 and 3
+# show local loading glyphs for PC 1 and 2, score glyphs for PC 1,2, and 3
 plot_river(x = Y_avg_TOC_log_summer.Tmode.pca.all, plots = "riverpca", river.glyph.loading=c(1,2),
            river.glyph.score = c(1,2,3), river = shape_Geum, coords = coords_Geum, r1=30, lwd=2.5)
 
@@ -351,7 +352,7 @@ for(i in 1:n.cls){
 }
 
 
-# results with FG/stepwise algorithm
+# results with FG algorithm
 pcpca.result.FG <- flury.hierarchy(data = as.matrix(dls@data[,1:n.var]), covmats = S, nvec = nvec, n.var = n.var, 
                                    cluster = dls$cluster.pca.river.pc12, alpha = 0.05, mode = "FG")
 
@@ -375,7 +376,7 @@ for(i in 1:n.cls){
 
 
 
-
+# apply CPC(2) model 
 res <- cpc::cpcq.test(covmats = S, nvec = nvec, 
                      B = pcpca.result.FG$B.cpc[,pcpca.result.FG$common_order], q = q)
 
@@ -399,10 +400,13 @@ for(j in 1:n.cls){
 evptv
 
 B[,2,] = - B[,2,]
-B
+
+B # loadings for each group including CPC
 
 score[,2] = -score[,2]
 Y_avg_TOC_log_summer.Tmode.pca.all$riverpca$scores <- score
+
+# take a look at zoomed section 
 plot_river(x = Y_avg_TOC_log_summer.Tmode.pca.all, plots = "riverpca", river.glyph.loading=c(1,2),
            river.glyph.score = c(1,2,3), river = shape_Geum, coords = coords_Geum, r1=10, lwd=6,
            zoom=TRUE, zoomx=c(127.21,127.31), zoomy=c(36.21,36.5))

@@ -1144,7 +1144,7 @@ importSSN_stream <- function(shreve_obj, location="Miho", multipleplaces=FALSE, 
   #reach ID (print rid)
   
   #(b) 관측 장소 자료
-  sites <- read.csv("/home/kyu9510/pca_on_river/Data/금강장소(엑셀편집)UTF8.csv",header=T)
+  sites <- read.csv("/home/kyu9510/pca_on_river/Data/ProcessedData/금강장소(엑셀편집)UTF8.csv",header=T)
   sites <- sites[which(sites$총량==1),]
   sites <- data.frame(name= sites$이름,x=sites$경도.Degree., y=sites$위도.Degree.)
   
@@ -1152,15 +1152,15 @@ importSSN_stream <- function(shreve_obj, location="Miho", multipleplaces=FALSE, 
   #rownames(sites@coords) <- sites@data[, "pid"]
   
   #(c) 수질 데이터 자료
-  alldata1 <- read.table("/home/kyu9510/pca_on_river/Data/수질20082013.txt",sep=',', header=T)
-  alldata2 <- read.table("/home/kyu9510/pca_on_river/Data/수질20132018.txt",sep=',', header=T)
+  alldata1 <- read.table("/home/kyu9510/pca_on_river/Data/ProcessedData/수질20082013.txt",sep=',', header=T)
+  alldata2 <- read.table("/home/kyu9510/pca_on_river/Data/ProcessedData/수질20132018.txt",sep=',', header=T)
   alldata <- rbind(alldata1, alldata2)
   
   #(d) 예전에 편집한 자료
   if(location=="Miho"){
-    data <- readRDS("/home/kyu9510/pca_on_river/Data/Geum(miho).RDS")
+    data <- readRDS("/home/kyu9510/pca_on_river/Data/ProcessedData/Geum(miho).RDS")
   }else if(location=="Full"){
-    data <- readRDS("/home/kyu9510/pca_on_river/Data/Geum.RDS")
+    data <- readRDS("/home/kyu9510/pca_on_river/Data/ProcessedData/Geum.RDS")
   }else{
     stop("Wrong location")
   }
@@ -1262,12 +1262,12 @@ importSSN_stream <- function(shreve_obj, location="Miho", multipleplaces=FALSE, 
   #• A value of 6 in element [i,j] indicates that the beginning of segment i is connected to the end of segment j, and the end of segment i is connected to the beginning of segment j.
   #• A value of NA in element [i,j] indicates that segments i and j are not connected.
   if(location=="Miho"){
-    flow_network_original <- line2network(path = "/home/kyu9510/pca_on_river/Data/River/", layer="GeumMiho", tolerance =  0.000001, reproject ="+proj=longlat +datum=WGS84", supplyprojection = NULL)
-    flow_network <- line2network(path = "/home/kyu9510/pca_on_river/Data/River/", layer="thinGeumMiho", tolerance =  0.000001, reproject ="+proj=longlat +datum=WGS84", supplyprojection = NULL)
+    flow_network_original <- line2network(path = "/home/kyu9510/pca_on_river/Data/ProcessedData/", layer="GeumMiho", tolerance =  0.000001, reproject ="+proj=longlat +datum=WGS84", supplyprojection = NULL)
+    flow_network <- line2network(path = "/home/kyu9510/pca_on_river/Data/ProcessedData/", layer="thinGeumMiho", tolerance =  0.000001, reproject ="+proj=longlat +datum=WGS84", supplyprojection = NULL)
     #plot(flow_network)
   }else if(location=="Full"){
-    flow_network_original <- line2network(path = "/home/kyu9510/pca_on_river/Data/River/", layer="Geum", tolerance =  0.000001, reproject ="+proj=longlat +datum=WGS84", supplyprojection = NULL)
-    flow_network <- line2network(path = "/home/kyu9510/pca_on_river/Data/River/", layer="thinGeum", tolerance =  0.000001, reproject ="+proj=longlat +datum=WGS84", supplyprojection = NULL)
+    flow_network_original <- line2network(path = "/home/kyu9510/pca_on_river/Data/ProcessedData/", layer="Geum", tolerance =  0.000001, reproject ="+proj=longlat +datum=WGS84", supplyprojection = NULL)
+    flow_network <- line2network(path = "/home/kyu9510/pca_on_river/Data/ProcessedData/", layer="thinGeum", tolerance =  0.000001, reproject ="+proj=longlat +datum=WGS84", supplyprojection = NULL)
     #plot(flow_network)
   }else{
     stop("Wrong location")
@@ -1417,7 +1417,7 @@ importSSN_stream <- function(shreve_obj, location="Miho", multipleplaces=FALSE, 
     for(ii in 1:length(DistanceUpstream_obs)){
       DistanceUpstream_obs[ii] <- upstream(startseg = 68, endseg = dist.imsi[ii,2], startvert = 20, endvert = dist.imsi[ii,3], rivers=flow_network_original, net=TRUE)
     }
-    shape_tinned <- readOGR("/home/kyu9510/pca_on_river/Data/River/thinGeumMiho.shp")
+    shape_tinned <- readOGR("/home/kyu9510/pca_on_river/Data/ProcessedData/thinGeumMiho.shp")
   }else if(location=="Full"){
     # upDist should also be calculated
     DistanceUpstream_seg <- rep(0, nrow(shape@data))
@@ -1429,7 +1429,7 @@ importSSN_stream <- function(shreve_obj, location="Miho", multipleplaces=FALSE, 
     for(ii in 1:length(DistanceUpstream_obs)){
       DistanceUpstream_obs[ii] <- upstream(startseg = 614, endseg = dist.imsi[ii,2], startvert = 8, endvert = dist.imsi[ii,3], rivers=flow_network_original, net=TRUE)
     }
-    shape_tinned <- readOGR("/home/kyu9510/pca_on_river/Data/River/thinGeum.shp")
+    shape_tinned <- readOGR("/home/kyu9510/pca_on_river/Data/ProcessedData/thinGeum.shp")
   }
   
   # (1)network.line.coords: network.line.coords

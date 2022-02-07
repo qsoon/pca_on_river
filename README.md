@@ -3,7 +3,7 @@
 This repo contains the source code for PCA on river networks. Especially, it analyzes the Geum River TOC data. 
 
 
-### Description
+## Description
 
 - Code
   - **source.R** and **iwanthue.R** include functions defined for analyses and visualization. 
@@ -15,7 +15,7 @@ This repo contains the source code for PCA on river networks. Especially, it ana
   - It is used to implement PCA on spatiotemporal data with adjustment for spatial / temporal autocorrelation. 
 
 
-### Code overview
+## Code overview
 The process described in **pca_river.R** is as follows.
 
 - Data load / preprocessing

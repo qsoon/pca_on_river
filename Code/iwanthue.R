@@ -1,3 +1,5 @@
+# The codes in this file were taken from Seoncheol Park's code (https://github.com/SeoncheolPark/paper-StreamflowLifting)
+
 swatch <- function(x) {
   # x: a vector of colours (hex, numeric, or string)
   par(mai=c(0.2, max(strwidth(x, "inch") + 0.4, na.rm = TRUE), 0.2, 0.4))

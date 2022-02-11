@@ -6,6 +6,8 @@ library(geosphere)
 library(ggplot2)
 library(ggdendro)
 
+# The structure of this code follows the structure of the paper. 
+
 #############################
 ## load Geum River network ##
 #############################

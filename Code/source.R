@@ -12,6 +12,11 @@ library(SSN)
 library(rgdal)
 library(GWmodel)
 
+
+# from "createWeight_SC" (line 21) to "compute_flow_vol" (line 2334) was defined by Seoncheol Park 
+# (https://github.com/SeoncheolPark/paper-StreamflowLifting)
+
+
 # existing createWeightS function takes file path of ssn object as an input 
 # createWeightS_SC takes ssn object itself as an input
 createWeightS_SC <- function (ssndata, afvcol="addfunccol", adjacency) {
@@ -2329,9 +2334,12 @@ compute_flow_vol <- function(adjacency, example_network, scalevec=c(0.2, 1.5), l
   return(list(shreve=shreve, flow=shreve_and_dist))
 }
 
+## =============================================================================================== ##
 
+####### functions by myself ###########
+# These functions are basically constructed by modifying existing functions of the "GWPCA" and "stpca" packages
+# for the purpose of analyzing river network data. 
 
-####### function by myself ###########
 wpca.adjust <- function(x,wt,rwt,cwt,...) {
   local.center <- function(x,wt)  
     sweep(x,2,colSums(sweep(x,1,wt,'*'))/sum(wt))

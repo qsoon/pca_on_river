@@ -3013,7 +3013,7 @@ plot_river <- function(x, plots = c("score", "biplot", "glyph", "info", "riverpc
       local.loadings <- glyph.data[,,river.glyph.loading[i]]
       # scores <- glyph.data$scores[, pc.glyph]
       plot(coords[, 1], coords[, 2], type = "n", xlab = names(coords)[1], 
-           ylab = names(coords)[2], main = NULL, cex.main = 1.5, cex.lab = 1.5, 
+           ylab = names(coords)[2], main = paste("Loadings for PC", i), cex.main = 1.5, cex.lab = 1.5, 
            cex.axis = 1.5, xlim = zoomx, 
            ylim = zoomy)
       lines(river, col = "black")
@@ -3038,7 +3038,7 @@ plot_river <- function(x, plots = c("score", "biplot", "glyph", "info", "riverpc
     par(mfrow = c(1,2), oma = c(2,2,2,2) + 0.1, mar = c(4,5,2,2) + 0.1)
     
     plot(coords[, 1], coords[, 2], type = "n", xlab = names(coords)[1], 
-         ylab = names(coords)[2], main = NULL, cex.main = 1.5, cex.lab = 1.5, 
+         ylab = names(coords)[2], main = paste("Scores: unweighted pca"), cex.main = 1.5, cex.lab = 1.5, 
          cex.axis = 1.5, xlim = zoomx, 
          ylim = zoomy)
     lines(river, col = "black")
@@ -3054,7 +3054,7 @@ plot_river <- function(x, plots = c("score", "biplot", "glyph", "info", "riverpc
     #                  r1 = r1, add = TRUE, lwd=lwd)
     
     plot(coords[, 1], coords[, 2], type = "n", xlab = names(coords)[1], 
-         ylab = names(coords)[2], main = NULL, cex.main = 1.5, cex.lab = 1.5, 
+         ylab = names(coords)[2], main = paste("Scores: river pca"), cex.main = 1.5, cex.lab = 1.5, 
          cex.axis = 1.5, xlim = zoomx, 
          ylim = zoomy)
     lines(river, col = "black")

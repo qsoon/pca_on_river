@@ -2806,264 +2806,295 @@ print.pca.river<-function(x, ...)
   invisible(x)
 }
 
-plot_river <- function(x, plots = c("score", "biplot", "glyph", "info", "riverpca"), 
-                       pc.map = 1, probs = c(0, 0.25, 0.75, 1), 
-                       pc.biplot = c(1,2), biplot.factor = 100, 
-                       pc.glyph = c(1, 2, 3), river.glyph.loading = c(1,2,3), river.glyph.score = c(1,2,3), river, r1 = 10, 
-                       coords, pc.ts = c(1, 2, 3), pc.meanPM = c(1, 2,3), 
-                       meanPM.factor = 0.05, lwd=2, zoom=FALSE, zoomx=c(0,1), zoomy=c(0,1)){
+plot_river <- function (x, plots = c("score", "biplot", "glyph", "info", "riverpca"),
+                        pc.map = 1, probs = c(0, 0.25, 0.75, 1),
+                        pc.biplot = c(1,2), biplot.factor = 100,
+                        pc.glyph = c(1, 2, 3), river.glyph.loading = c(1,2,3), river.glyph.score = c(1,2,3), river, r1 = 10,
+                        coords, pc.ts = c(1, 2, 3), pc.meanPM = c(1, 2,3),
+                        meanPM.factor = 0.05, lwd=2, zoom=FALSE, zoomx=c(0,1), zoomy=c(0,1))
+{
   pca.mode <- x$pca.mode
-  if(zoom==FALSE){
+  if(zoom==FALSE)
+  {
     zoomx <- c(river@bbox[1, ])
     zoomy <- c(river@bbox[2, ])
   }
-  if (pca.mode == "Smode"){
+  if (pca.mode == "Smode")
+  {
     message("For river PCA, only support T-mode PCA")
     return()
   }
-  else{
-  if ("biplot" %in% plots) {
-    nplot <- length(x$pca.wt)
-    if (nplot == 4) {
-      par(mfrow = c(2, 2),oma = c(2,2,2,2) + 0.1, mar = c(4,4,2,1) + 0.1)
-    }
-    else {
-      par(mfrow = c(1, nplot))
-    }
-    pca.type <- x$pca.wt
-    xlims <- matrix(nrow = 2, ncol = length(pca.type))
-    ylims <- matrix(nrow = 2, ncol = length(pca.type))
-    for (i in 1:nplot) {
-      pca.type1 <- pca.type[i]
-      scores <- x[[pca.type1]]$scores
-      rownames(scores) <- x[["row.names"]]
-      loadings <- x[[pca.type1]]$loads
-      rownames(loadings) <- x[["col.names"]]
-      var.val <- x[[pca.type1]]$var
-      sd.val = sqrt(var.val)
-      xlims[, i] <- range(scores[, pc.biplot[1]]/sd.val[pc.biplot[1]], 
-                          loadings[, pc.biplot[1]] * sd.val[pc.biplot[1]]/biplot.factor * 
-                            1.2)
-      ylims[, i] <- range(scores[, pc.biplot[2]]/sd.val[pc.biplot[2]], 
-                          loadings[, pc.biplot[2]] * sd.val[pc.biplot[2]]/biplot.factor * 
-                            1.2)
-    }
-    for (i in 1:nplot) {
-      pca.type1 <- pca.type[i]
-      scores <- x[[pca.type1]]$scores
-      rownames(scores) <- x[["row.names"]]
-      loadings <- x[[pca.type1]]$loads
-      rownames(loadings) <- x[["col.names"]]
-      var.val <- x[[pca.type1]]$var
-      var.prop <- x[[pca.type1]]$var.prop
-      pc1 = 100 * round(var.prop[pc.biplot[1]], digits = 2)
-      pc2 = 100 * round(var.prop[pc.biplot[2]], digits = 2)
-      xlab = paste("PC", pc.biplot[1], ": ", pc1, "%", 
-                   sep = "")
-      ylab = paste("PC", pc.biplot[2], ": ", pc2, "%", 
-                   sep = "")
-      sd.val = sqrt(var.val)
-      scores.min = min(scores[, pc.biplot])
-      scores.max = max(scores[, pc.biplot])
-      xlim <- c(min(xlims[1, ]), max(xlims[2, ]))
-      ylim <- c(min(ylims[1, ]), max(ylims[2, ]))
-      plot(scores[, pc.biplot[1]]/sd.val[pc.biplot[1]], 
-           scores[, pc.biplot[2]]/sd.val[pc.biplot[2]], 
-           main = pca.type1, xlab = xlab, 
-           ylab = ylab, type = "n", xlim = xlim, ylim = ylim, 
-           col.axis = "black", cex.main = 1.5, cex.lab = 1.5, 
-           cex.axis = 1.5)
-      arrows(0, 0, loadings[, pc.biplot[1]] * sd.val[pc.biplot[1]]/biplot.factor, 
-             loadings[, pc.biplot[2]] * sd.val[pc.biplot[2]]/biplot.factor, 
-             length = 0.1, lwd = lwd, angle = 20, col = "red")
-      text(loadings[, pc.biplot[1]] * sd.val[pc.biplot[1]]/biplot.factor * 
-             1.2, loadings[, pc.biplot[2]] * sd.val[pc.biplot[2]]/biplot.factor * 
-             1.2, labels = rownames(loadings), col = "red", 
-           cex = 1.2, font=2)
-      text(scores[, pc.biplot[1]]/sd.val[pc.biplot[1]], 
-           scores[, pc.biplot[2]]/sd.val[pc.biplot[2]], 
-           labels = rownames(scores), col = "blue", cex = 0.9, font=2)
-      abline(0, 0, col = "black")
-      abline(v = 0, col = "green")
-    }
-  }
-  if ("glyph" %in% plots) {
-    if (length(pc.glyph) < 3) {
-      message("For plots = glyph: glyph should be used to display 3 or \n more principal components simultaneously.")
-    }
-    nplot <- length(x$pca.wt)
-    if (nplot == 4) {
-      par(mfrow = c(2, 2))
-    }
-    else {
-      par(mfrow = c(nplot, 1))
-    }
-    pca.type <- x$pca.wt
-    for (i in 1:nplot) {
-      glyph.data <- x[[pca.type[i]]]
-      scores <- glyph.data$scores[, pc.glyph]
-      plot(coords[, 1], coords[, 2], type = "n", xlab = names(coords)[1], 
-           ylab = names(coords)[2], main = paste("Scores: weight =", 
-                                                 pca.type[i]), cex.main = 1.5, cex.lab = 1.5, 
-           cex.axis = 1.5, xlim = zoomx, 
-           ylim = zoomy)
-      lines(river, col = "lightgrey")
-      GWmodel::glyph.plot(as.matrix(scores), coords, 
-                          r1 = r1, add = TRUE)
+  else
+  {
+    if ("biplot" %in% plots) 
+    {
+      nplot <- length(x$pca.wt)
+      if (nplot == 4) 
+      {
+        par(mfrow = c(2, 2),oma = c(2,2,2,2) + 0.1, mar = c(4,4,2,1) + 0.1)
+      }
+      else 
+      {
+        par(mfrow = c(1, nplot))
+      }
+      pca.type <- x$pca.wt
+      xlims <- matrix(nrow = 2, ncol = length(pca.type))
+      ylims <- matrix(nrow = 2, ncol = length(pca.type))
       
+      for (i in 1:nplot) 
+      {
+        pca.type1 <- pca.type[i]
+        scores <- x[[pca.type1]]$scores
+        rownames(scores) <- x[["row.names"]]
+        loadings <- x[[pca.type1]]$loads
+        rownames(loadings) <- x[["col.names"]]
+        var.val <- x[[pca.type1]]$var
+        sd.val = sqrt(var.val)
+        xlims[, i] <- range(scores[, pc.biplot[1]]/sd.val[pc.biplot[1]], 
+                            loadings[, pc.biplot[1]] * sd.val[pc.biplot[1]]/biplot.factor * 
+                              1.2)
+        ylims[, i] <- range(scores[, pc.biplot[2]]/sd.val[pc.biplot[2]], 
+                            loadings[, pc.biplot[2]] * sd.val[pc.biplot[2]]/biplot.factor * 
+                              1.2)
+      }
+      for (i in 1:nplot) 
+      {
+        pca.type1 <- pca.type[i]
+        scores <- x[[pca.type1]]$scores
+        rownames(scores) <- x[["row.names"]]
+        loadings <- x[[pca.type1]]$loads
+        rownames(loadings) <- x[["col.names"]]
+        var.val <- x[[pca.type1]]$var
+        var.prop <- x[[pca.type1]]$var.prop
+        pc1 = 100 * round(var.prop[pc.biplot[1]], digits = 2)
+        pc2 = 100 * round(var.prop[pc.biplot[2]], digits = 2)
+        xlab = paste("PC", pc.biplot[1], ": ", pc1, "%", 
+                     sep = "")
+        ylab = paste("PC", pc.biplot[2], ": ", pc2, "%", 
+                     sep = "")
+        sd.val = sqrt(var.val)
+        scores.min = min(scores[, pc.biplot])
+        scores.max = max(scores[, pc.biplot])
+        xlim <- c(min(xlims[1, ]), max(xlims[2, ]))
+        ylim <- c(min(ylims[1, ]), max(ylims[2, ]))
+        plot(scores[, pc.biplot[1]]/sd.val[pc.biplot[1]], 
+             scores[, pc.biplot[2]]/sd.val[pc.biplot[2]], 
+             main = pca.type1, xlab = xlab, 
+             ylab = ylab, type = "n", xlim = xlim, ylim = ylim, 
+             col.axis = "black", cex.main = 1.5, cex.lab = 1.5, 
+             cex.axis = 1.5)
+        arrows(0, 0, loadings[, pc.biplot[1]] * sd.val[pc.biplot[1]]/biplot.factor, 
+               loadings[, pc.biplot[2]] * sd.val[pc.biplot[2]]/biplot.factor, 
+               length = 0.1, lwd = lwd, angle = 20, col = "red")
+        text(loadings[, pc.biplot[1]] * sd.val[pc.biplot[1]]/biplot.factor * 
+               1.2, loadings[, pc.biplot[2]] * sd.val[pc.biplot[2]]/biplot.factor * 
+               1.2, labels = rownames(loadings), col = "red", 
+             cex = 1.2, font=2)
+        text(scores[, pc.biplot[1]]/sd.val[pc.biplot[1]], 
+             scores[, pc.biplot[2]]/sd.val[pc.biplot[2]], 
+             labels = rownames(scores), col = "blue", cex = 0.9, font=2)
+        abline(0, 0, col = "black")
+        abline(v = 0, col = "green")
+      }
     }
-    message("For plots = glyph: did you check that coordinates for monitoring site ID's are in \nthe same order as data used for stpca()?  \nIf not then glyphs might not correspond to the correct monitoring site.")
-  }
-  if ("score" %in% plots) {
-    nplot <- length(x$pca.wt)
-    pca.type <- x$pca.wt
-    if (nplot == 4) {
-      par(mfrow = c(2, 2))
+    if ("glyph" %in% plots) 
+    {
+      if (length(pc.glyph) < 3) 
+      {
+        message("For plots = glyph: glyph should be used to display 3 or \n more principal components simultaneously.")
+      }
+      nplot <- length(x$pca.wt)
+      if (nplot == 4) 
+      {
+        par(mfrow = c(2, 2))
+      }
+      else 
+      {
+        par(mfrow = c(nplot, 1))
+      }
+      pca.type <- x$pca.wt
+      
+      for (i in 1:nplot) 
+      {
+        glyph.data <- x[[pca.type[i]]]
+        scores <- glyph.data$scores[, pc.glyph]
+        plot(coords[, 1], coords[, 2], type = "n", xlab = names(coords)[1], 
+             ylab = names(coords)[2], main = paste("Scores: weight =", 
+                                                   pca.type[i]), cex.main = 1.5, cex.lab = 1.5, 
+             cex.axis = 1.5, xlim = zoomx, 
+             ylim = zoomy)
+        lines(river, col = "lightgrey")
+        GWmodel::glyph.plot(as.matrix(scores), coords, 
+                            r1 = r1, add = TRUE)
+        
+      }
+      message("For plots = glyph: did you check that coordinates for monitoring site ID's are in \nthe same order as data used for stpca()?  \nIf not then glyphs might not correspond to the correct monitoring site.")
     }
-    for (i in 1:nplot) {
-      title <- paste("Scores PC", pc.map, "\n weight =", 
-                     pca.type[i])
-      map.data <- x[[pca.type[i]]]
-      scores <- map.data$scores[, pc.map]
-      n.colors <- length(probs) - 1
-      data.vec <- sort(scores)
-      quants <- quantile(data.vec, probs = probs)
-      getPalette <- (grDevices::colorRampPalette(sp::bpy.colors(n.colors)))(n.colors)
-      par(mar = c(5, 4, 4, 2) + 0.1, mfrow=c(2,2))
-      graphics::layout(matrix(1:2, ncol = 2), widths = c(0.85, 
-                                                         0.15), heights = c(1, 1))
-      plot(coords[, 1], coords[, 2], type = "n", xlab = "Easting", 
-           ylab = "Northing", main = title, cex.main = 1.5, 
-           cex.axis = 1.5, cex.lab = 1.5, xlim = c(river@bbox[1, 
-           ]), ylim = c(river@bbox[2, ]))
-      lines(river)
-      points(coords[, 1], coords[, 2], pch = 19, cex = 2, 
-             col = getPalette[cut(scores, breaks = quants)])
-      par(mar = c(5.1, 0.4, 4.1, 0.5))
-      getPalette <- (grDevices::colorRampPalette(sp::bpy.colors(100)))(100)
-      plot(NA, type = "n", ann = FALSE, xlim = c(0, 
-                                                 2.1), ylim = c(0, 101), xaxt = "n", yaxt = "n", 
-           bty = "n")
-      rect(1, c(0:99), 1.5, c(1:100), col = c(getPalette), 
-           border = NA)
-      a <- n.colors
-      b <- 100/n.colors
-      text(x = 0.5, y = ((0:a) * b), labels = round(quants, 
-                                                    2), cex = 1.5)
-    }
-  }
-  if ("info" %in% plots) {
-    info.num <- length(x$info)
-    info.type <- x$info
-    for (i in 1:info.num) {
-      title <- paste("Plot for", info.type[i])
-      map.data <- x[[info.type[i]]]
-      if(info.type[i] == "PTV"){
-        scores <- x[[info.type[i]]]
+    
+    if ("score" %in% plots)
+    {
+      nplot <- length(x$pca.wt)
+      pca.type <- x$pca.wt
+      if (nplot == 4) 
+      {
+        par(mfrow = c(2, 2))
+      }
+      for (i in 1:nplot) 
+      {
+        title <- paste("Scores PC", pc.map, "\n weight =", 
+                       pca.type[i])
+        map.data <- x[[pca.type[i]]]
+        scores <- map.data$scores[, pc.map]
         n.colors <- length(probs) - 1
         data.vec <- sort(scores)
         quants <- quantile(data.vec, probs = probs)
+        getPalette <- (grDevices::colorRampPalette(sp::bpy.colors(n.colors)))(n.colors)
+        par(mar = c(5, 4, 4, 2) + 0.1, mfrow=c(2,2))
+        graphics::layout(matrix(1:2, ncol = 2), widths = c(0.85, 
+                                                           0.15), heights = c(1, 1))
+        plot(coords[, 1], coords[, 2], type = "n", xlab = "Easting", 
+             ylab = "Northing", main = title, cex.main = 1.5, 
+             cex.axis = 1.5, cex.lab = 1.5, xlim = c(river@bbox[1, 
+             ]), ylim = c(river@bbox[2, ]))
+        lines(river)
+        points(coords[, 1], coords[, 2], pch = 19, cex = 2, 
+               col = getPalette[cut(scores, breaks = quants)])
+        par(mar = c(5.1, 0.4, 4.1, 0.5))
+        getPalette <- (grDevices::colorRampPalette(sp::bpy.colors(100)))(100)
+        plot(NA, type = "n", ann = FALSE, xlim = c(0, 
+                                                   2.1), ylim = c(0, 101), xaxt = "n", yaxt = "n", 
+             bty = "n")
+        rect(1, c(0:99), 1.5, c(1:100), col = c(getPalette), 
+             border = NA)
+        a <- n.colors
+        b <- 100/n.colors
+        text(x = 0.5, y = ((0:a) * b), labels = round(quants, 
+                                                      2), cex = 1.5)
       }
-      else{
-        scores <- x[[info.type[i]]]
-        nums = length(unique(scores))
-        if(nums==1) nums=2
-        n.colors <- nums
-        data.vec <- sort(scores)
-        quants <- nums
+    }
+    if ("info" %in% plots) 
+    {
+      info.num <- length(x$info)
+      info.type <- x$info
+      for (i in 1:info.num) 
+      {
+        title <- paste("Plot for", info.type[i])
+        map.data <- x[[info.type[i]]]
+        if(info.type[i] == "PTV")
+        {
+          scores <- x[[info.type[i]]]
+          n.colors <- length(probs) - 1
+          data.vec <- sort(scores)
+          quants <- quantile(data.vec, probs = probs)
+        }
+        else
+        {
+          scores <- x[[info.type[i]]]
+          nums = length(unique(scores))
+          if(nums==1) nums=2
+          n.colors <- nums
+          data.vec <- sort(scores)
+          quants <- nums
+        }
+        getPalette <- (grDevices::colorRampPalette(sp::bpy.colors(n.colors)))(n.colors)
+        par(mar = c(5, 4, 4, 2) + 0.1)
+        graphics::layout(matrix(1:2, ncol = 2), widths = c(0.85, 
+                                                           0.15), heights = c(1, 1))
+        plot(coords[, 1], coords[, 2], type = "n", xlab = "Easting", 
+             ylab = "Northing", main = title, cex.main = 1.5, 
+             cex.axis = 1.5, cex.lab = 1.5, xlim = c(river@bbox[1, 
+             ]), ylim = c(river@bbox[2, ]))
+        lines(river)
+        points(coords[, 1], coords[, 2], pch = 19, cex = 2, 
+               col = getPalette[cut(scores, breaks = quants)])
+        par(mar = c(5.1, 0.4, 4.1, 0.5))
+        getPalette <- (grDevices::colorRampPalette(sp::bpy.colors(100)))(100)
+        plot(NA, type = "n", ann = FALSE, xlim = c(0, 
+                                                   2.1), ylim = c(0, 101), xaxt = "n", yaxt = "n", 
+             bty = "n")
+        rect(1, c(0:99), 1.5, c(1:100), col = c(getPalette), 
+             border = NA)
+        a <- n.colors
+        b <- 100/n.colors
+        text(x = 0.5, y = ((0:a) * b), labels = round(quants, 
+                                                      2), cex = 1.5)
       }
-      getPalette <- (grDevices::colorRampPalette(sp::bpy.colors(n.colors)))(n.colors)
-      par(mar = c(5, 4, 4, 2) + 0.1)
-      graphics::layout(matrix(1:2, ncol = 2), widths = c(0.85, 
-                                                         0.15), heights = c(1, 1))
-      plot(coords[, 1], coords[, 2], type = "n", xlab = "Easting", 
-           ylab = "Northing", main = title, cex.main = 1.5, 
-           cex.axis = 1.5, cex.lab = 1.5, xlim = c(river@bbox[1, 
-           ]), ylim = c(river@bbox[2, ]))
-      lines(river)
-      points(coords[, 1], coords[, 2], pch = 19, cex = 2, 
-             col = getPalette[cut(scores, breaks = quants)])
-      par(mar = c(5.1, 0.4, 4.1, 0.5))
-      getPalette <- (grDevices::colorRampPalette(sp::bpy.colors(100)))(100)
-      plot(NA, type = "n", ann = FALSE, xlim = c(0, 
-                                                 2.1), ylim = c(0, 101), xaxt = "n", yaxt = "n", 
-           bty = "n")
-      rect(1, c(0:99), 1.5, c(1:100), col = c(getPalette), 
-           border = NA)
-      a <- n.colors
-      b <- 100/n.colors
-      text(x = 0.5, y = ((0:a) * b), labels = round(quants, 
-                                                    2), cex = 1.5)
     }
-  }
-  if ("riverpca" %in% plots) {
-    if (length(river.glyph.loading) < 3) {
-      message("For plots = glyph: glyph should be used to display 3 or \n more principal components simultaneously.")
-    }
-    nplot <- length(river.glyph.loading)
-    if (nplot == 4) {
-      par(mfrow = c(2, 2))
-    }
-    else {
-      par(mfrow = c(1,nplot), oma = c(2,2,2,2) + 0.1, mar = c(4,5,2,2) + 0.1)
-    }
-    pca.type <- "riverpca"
-    for (i in 1:nplot) {
-      glyph.data <- x[[pca.type]]$loadings
-      local.loadings <- glyph.data[,,river.glyph.loading[i]]
+    if ("riverpca" %in% plots)
+    {
+      if (length(river.glyph.loading) < 3) 
+      {
+        message("For plots = glyph: glyph should be used to display 3 or \n more principal components simultaneously.")
+      }
+      nplot <- length(river.glyph.loading)
+      if (nplot == 4) 
+      {
+        par(mfrow = c(2, 2))
+      }
+      else 
+      {
+        par(mfrow = c(1,nplot), oma = c(2,2,2,2) + 0.1, mar = c(4,5,2,2) + 0.1)
+      }
+      pca.type <- "riverpca"
+      for (i in 1:nplot) 
+      {
+        glyph.data <- x[[pca.type]]$loadings
+        local.loadings <- glyph.data[,,river.glyph.loading[i]]
+        # scores <- glyph.data$scores[, pc.glyph]
+        plot(coords[, 1], coords[, 2], type = "n", xlab = names(coords)[1], 
+             ylab = names(coords)[2], main = paste("Loadings for PC", i), cex.main = 1.5, cex.lab = 1.5, 
+             cex.axis = 1.5, xlim = zoomx, 
+             ylim = zoomy)
+        lines(river, col = "black")
+        glyph.plot.river(as.matrix(local.loadings), coords, 
+                         r1 = r1, add = TRUE, lwd=lwd)
+        if(zoom==FALSE)
+        {
+          glyph.plot.river(rbind(t(x$spatiotemporal$loads[,i]),0), rbind(c(min(coords[,1])+0.1,max(coords[,2])-0.05),0), 
+                           r1 = 40*r1, add = TRUE, lwd=lwd) # manually control
+          text(min(coords[,1])+0.1,max(coords[,2])-0.2,expression(TPCA[ST]), cex=lwd, font=2) # manually control
+        }
+      }
+      message("For plots = glyph: did you check that coordinates for monitoring site ID's are in \nthe same order as data used for stpca()?  \nIf not then glyphs might not correspond to the correct monitoring site.")
+      
+      if (length(river.glyph.score) < 3) 
+      {
+        message("For plots = glyph: glyph should be used to display 3 or \n more principal components simultaneously.")
+      }
+      
+      glyph.data <- x[[pca.type]]$scores
+      local.scores <- glyph.data[,river.glyph.score]
       # scores <- glyph.data$scores[, pc.glyph]
+      
+      par(mfrow = c(1,2), oma = c(2,2,2,2) + 0.1, mar = c(4,5,2,2) + 0.1)
+      
       plot(coords[, 1], coords[, 2], type = "n", xlab = names(coords)[1], 
-           ylab = names(coords)[2], main = paste("Loadings for PC", i), cex.main = 1.5, cex.lab = 1.5, 
+           ylab = names(coords)[2], main = paste("Scores: unweighted pca"), cex.main = 1.5, cex.lab = 1.5, 
            cex.axis = 1.5, xlim = zoomx, 
            ylim = zoomy)
       lines(river, col = "black")
-      glyph.plot.river(as.matrix(local.loadings), coords, 
+      glyph.plot.river(as.matrix(x[["unweighted"]]$scores[,river.glyph.score]), coords, 
                        r1 = r1, add = TRUE, lwd=lwd)
-      if(zoom==FALSE){
-      glyph.plot.river(rbind(t(x$spatiotemporal$loads[,i]),0), rbind(c(min(coords[,1])+0.1,max(coords[,2])-0.05),0), 
-                       r1 = 40*r1, add = TRUE, lwd=lwd) # manually control
-      text(min(coords[,1])+0.1,max(coords[,2])-0.2,expression(TPCA[ST]), cex=lwd, font=2) # manually control
-      }
+      
+      # plot(coords[, 1], coords[, 2], type = "n", xlab = names(coords)[1], 
+      #      ylab = names(coords)[2], main = NULL, cex.main = 1.5, cex.lab = 1.5, 
+      #      cex.axis = 1.5, xlim = zoomx, 
+      #      ylim = zoomy)
+      # lines(river, col = "black")
+      # glyph.plot.river(as.matrix(x[["spatiotemporal"]]$scores[,river.glyph.score]), coords, 
+      #                  r1 = r1, add = TRUE, lwd=lwd)
+      
+      plot(coords[, 1], coords[, 2], type = "n", xlab = names(coords)[1], 
+           ylab = names(coords)[2], main = paste("Scores: river pca"), cex.main = 1.5, cex.lab = 1.5, 
+           cex.axis = 1.5, xlim = zoomx, 
+           ylim = zoomy)
+      lines(river, col = "black")
+      glyph.plot.river(as.matrix(local.scores), coords, 
+                       r1 = r1, add = TRUE, lwd=lwd)
+      
+      message("For plots = glyph: did you check that coordinates for monitoring site ID's are in \nthe same order as data used for stpca()?  \nIf not then glyphs might not correspond to the correct monitoring site.")
+      
     }
-    message("For plots = glyph: did you check that coordinates for monitoring site ID's are in \nthe same order as data used for stpca()?  \nIf not then glyphs might not correspond to the correct monitoring site.")
-    
-    if (length(river.glyph.score) < 3) {
-      message("For plots = glyph: glyph should be used to display 3 or \n more principal components simultaneously.")
-    }
-    
-    glyph.data <- x[[pca.type]]$scores
-    local.scores <- glyph.data[,river.glyph.score]
-    # scores <- glyph.data$scores[, pc.glyph]
-    
-    par(mfrow = c(1,2), oma = c(2,2,2,2) + 0.1, mar = c(4,5,2,2) + 0.1)
-    
-    plot(coords[, 1], coords[, 2], type = "n", xlab = names(coords)[1], 
-         ylab = names(coords)[2], main = paste("Scores: unweighted pca"), cex.main = 1.5, cex.lab = 1.5, 
-         cex.axis = 1.5, xlim = zoomx, 
-         ylim = zoomy)
-    lines(river, col = "black")
-    glyph.plot.river(as.matrix(x[["unweighted"]]$scores[,river.glyph.score]), coords, 
-                     r1 = r1, add = TRUE, lwd=lwd)
-    
-    # plot(coords[, 1], coords[, 2], type = "n", xlab = names(coords)[1], 
-    #      ylab = names(coords)[2], main = NULL, cex.main = 1.5, cex.lab = 1.5, 
-    #      cex.axis = 1.5, xlim = zoomx, 
-    #      ylim = zoomy)
-    # lines(river, col = "black")
-    # glyph.plot.river(as.matrix(x[["spatiotemporal"]]$scores[,river.glyph.score]), coords, 
-    #                  r1 = r1, add = TRUE, lwd=lwd)
-    
-    plot(coords[, 1], coords[, 2], type = "n", xlab = names(coords)[1], 
-         ylab = names(coords)[2], main = paste("Scores: river pca"), cex.main = 1.5, cex.lab = 1.5, 
-         cex.axis = 1.5, xlim = zoomx, 
-         ylim = zoomy)
-    lines(river, col = "black")
-    glyph.plot.river(as.matrix(local.scores), coords, 
-                     r1 = r1, add = TRUE, lwd=lwd)
-    
-    message("For plots = glyph: did you check that coordinates for monitoring site ID's are in \nthe same order as data used for stpca()?  \nIf not then glyphs might not correspond to the correct monitoring site.")
-    
-  }
   }
 }
 
@@ -3104,7 +3135,7 @@ glyph.plot.river <- function (ld, loc, r1 = 50, add = FALSE, alpha = 1, sep.cont
     }
   }
   glyph.plot2 <- function(ld, loc, r = max(max(loc[, 1]) - 
-                                             min(loc[, 1]), max(loc[, 2]) - min(loc[, 2]))/r1, add = FALSE, 
+                                             min(loc[, 1]), max(loc[, 2]) - min(loc[, 2])) / r1, add = FALSE, 
                           alpha = 1, lwd) {
     rowmax <- function(z) z[cbind(1:nrow(z), max.col(abs(z)))]
     ld <- sweep(ld, 1, sign(rowmax(ld)), "*")
@@ -3401,116 +3432,116 @@ plot_stpca_zoom <- function (x, plots = c("map", "biplot", "glyph", "ts", "meanP
 }
 
 
-flury.hierarchy = function(data, covmats, nvec, n.var, cluster, alpha=0.05, mode="FG"){
+flury.hierarchy <- function(data, covmats, nvec, n.var, cluster, alpha=0.05, mode="FG"){
   # flury's AIC
   if(mode == "FG"){
-    g = cpc::FG
+    g <- cpc::FG
   }else if(mode == "stepwise"){
-    g = cpc::stepwisecpc
+    g <- cpc::stepwisecpc
   }
   
-  varnames = colnames(covmats[,,1]) # variable names
-  no.groups = dim(covmats)[3] # number of groups
+  varnames <- colnames(covmats[,,1]) # variable names
+  no.groups <- dim(covmats)[3] # number of groups
   
-  B.cpc = g(covmats = covmats, nvec = nvec)$B # common eigenvectors under CPC model
-  rownames(B.cpc) = varnames
-  colnames(B.cpc) = paste("PC",c(1:length(varnames)),sep="")
-  common_order = cpc::findcpc(covmats=covmats, B=B.cpc, # common eigenvectors order for cpcq model 
+  B.cpc = g(covmats <- covmats, nvec = nvec)$B # common eigenvectors under CPC model
+  rownames(B.cpc) <- varnames
+  colnames(B.cpc) <- paste("PC",c(1:length(varnames)),sep="")
+  common_order <- cpc::findcpc(covmats=covmats, B=B.cpc, # common eigenvectors order for cpcq model 
                               plotting=FALSE)$commonvec.order
   
-  flury_res = cpc::flury.test(covmats=covmats, nvec=nvec, B=B.cpc, # flury's hierarchy model res 
+  flury_res <- cpc::flury.test(covmats=covmats, nvec=nvec, B=B.cpc, # flury's hierarchy model res 
                               p = n.var, qmax = n.var - 2, 
                               commonvec.order = common_order)
-  flury_res = cbind(flury_res, rep(0, n.var+2), rep(0, n.var+2), rep(0, n.var+2))
-  colnames(flury_res)[7] = "total.chi.square"
-  colnames(flury_res)[8] = "total.df"
-  colnames(flury_res)[9] = "criterion"
+  flury_res <- cbind(flury_res, rep(0, n.var+2), rep(0, n.var+2), rep(0, n.var+2))
+  colnames(flury_res)[7] <- "total.chi.square"
+  colnames(flury_res)[8] <- "total.df"
+  colnames(flury_res)[9] <- "criterion"
   
-  res.equal = cpc::equal.test(covmats=covmats, nvec=nvec) # equality test
+  res.equal <- cpc::equal.test(covmats=covmats, nvec=nvec) # equality test
   
-  equal = 0 # if equality model holds, becomes 1
-  prop = 0 # if proportionality model holds, becomes 1
-  cpc = 0 # if cpc model holds, becomes 1
+  equal <- 0 # if equality model holds, becomes 1
+  prop <- 0 # if proportionality model holds, becomes 1
+  cpc <- 0 # if cpc model holds, becomes 1
   
-  res = list()
-  res[[1]] = equal ; res[[2]] = prop ; res[[3]] = cpc
-  res[[4]] = B.cpc ; res[[5]] = common_order ; res[[6]] = flury_res  
-  names(res) = c("equal", "prop", "cpc", "B.cpc", "common_order", "flury_res")
-  flury_res[1,7] = res.equal$chi.square
-  flury_res[1,8] = res.equal$df
-  flury_res[1,9] = qchisq(1-alpha, res.equal$df)
+  res <- list()
+  res[[1]] <- equal ; res[[2]] <- prop ; res[[3]] <- cpc
+  res[[4]] <- B.cpc ; res[[5]] <- common_order ; res[[6]] <- flury_res  
+  names(res) <- c("equal", "prop", "cpc", "B.cpc", "common_order", "flury_res")
+  flury_res[1,7] <- res.equal$chi.square
+  flury_res[1,8] <- res.equal$df
+  flury_res[1,9] <- qchisq(1-alpha, res.equal$df)
   
   cat("####### Hypothesis Testing #######", end= "\n")
   if(res.equal$chi.square > 
      qchisq(1-alpha, res.equal$df)){
     cat("1 Reject Equality Model", end="\n")
-    res.prop = cpc::prop.test(covmats=covmats, nvec=nvec) # proportionality test
+    res.prop <- cpc::prop.test(covmats=covmats, nvec=nvec) # proportionality test
     
-    flury_res[2,7] = res.prop$chi.square
-    flury_res[2,8] = res.prop$df
-    flury_res[2,9] = qchisq(1-alpha, res.prop$df)
+    flury_res[2,7] <- res.prop$chi.square
+    flury_res[2,8] <- res.prop$df
+    flury_res[2,9] <- qchisq(1-alpha, res.prop$df)
     
     if(res.prop$chi.square >
        qchisq(1-alpha, res.prop$df)){
       cat("2 Reject Proportionality Model", end="\n")
-      res.cpc = cpc::cpc.test(covmats=covmats, nvec=nvec) # cpc test
+      res.cpc <- cpc::cpc.test(covmats=covmats, nvec=nvec) # cpc test
       
-      flury_res[3,7] = res.cpc$chi.square
-      flury_res[3,8] = res.cpc$df
-      flury_res[3,9] = qchisq(1-alpha, res.cpc$df)
+      flury_res[3,7] <- res.cpc$chi.square
+      flury_res[3,8] <- res.cpc$df
+      flury_res[3,9] <- qchisq(1-alpha, res.cpc$df)
       
       if(res.cpc$chi.square >
          qchisq(1-alpha, res.cpc$df)){
         cat("3 Reject CPC Model", end="\n")
         
-        q.common = 0
+        q.common <- 0
         if(n.var > 2){
           for(q in (n.var-2):1){
-            res.cpcq = cpc::cpcq.test(covmats = covmats, nvec = nvec, 
+            res.cpcq <- cpc::cpcq.test(covmats = covmats, nvec = nvec, 
                                       B = B.cpc[,common_order], q = q) # cpcq test
             
-            flury_res[(n.var+2-q),7] = res.cpcq$chi.square
-            flury_res[(n.var+2-q),8] = res.cpcq$df
-            flury_res[(n.var+2-q),9] = qchisq(1-alpha, res.cpcq$df)
+            flury_res[(n.var+2-q),7] <- res.cpcq$chi.square
+            flury_res[(n.var+2-q),8] <- res.cpcq$df
+            flury_res[(n.var+2-q),9] <- qchisq(1-alpha, res.cpcq$df)
             
             if(res.cpcq$chi.square > qchisq(1-alpha, res.cpcq$df)){
               cat(paste(2+n.var-q, " Reject CPC(",q,") Model", sep=""), end="\n")
-              q.common = 0
+              q.common <- 0
             }else{
               cat(paste(2+n.var-q, " Accept CPC(",q,") Model", sep=""), end="\n")
-              q.common = q # determine cpc(q) model 
-              res[[7]] = q.common ; res[[8]] = res.cpcq$covmats.cpcq
-              res[[9]] = B.partial(covmats=covmats, nvec=nvec, B=B.cpc,
+              q.common <- q # determine cpc(q) model 
+              res[[7]] <- q.common ; res[[8]] = res.cpcq$covmats.cpcq
+              res[[9]] <- B.partial(covmats=covmats, nvec=nvec, B=B.cpc,
                                    commonvec.order = common_order, q=q.common)
               
-              score = matrix(0, nrow = sum(nvec), ncol = n.var)
-              R.F.partial = array(0, c(n.var, n.var, no.groups), dimnames = list(c(),c(),paste("Group",1:no.groups, sep = "")))
-              evptv = array(0, c(2, n.var, no.groups), 
+              score <- matrix(0, nrow = sum(nvec), ncol = n.var)
+              R.F.partial <- array(0, c(n.var, n.var, no.groups), dimnames = list(c(),c(),paste("Group",1:no.groups, sep = "")))
+              evptv <- array(0, c(2, n.var, no.groups), 
                             dimnames = list(c("Eigenvalues", "Percentage of total variation"),
                                             paste("PC",c(1:n.var),sep=""),paste("Group",1:no.groups, sep = "")))
               for(j in 1:no.groups){
-                Fj = t(res[[9]][,,j])%*%covmats[,,j]%*%res[[9]][,,j] # covariance of score 
-                lambda.inv.sq.rt = diag(1/sqrt(diag(Fj)))
-                Rj = lambda.inv.sq.rt%*%Fj%*%lambda.inv.sq.rt # correlation of score
+                Fj <- t(res[[9]][,,j])%*%covmats[,,j]%*%res[[9]][,,j] # covariance of score 
+                lambda.inv.sq.rt <- diag(1/sqrt(diag(Fj)))
+                Rj <- lambda.inv.sq.rt%*%Fj%*%lambda.inv.sq.rt # correlation of score
                 
-                R.F.partial[,,j] = Fj
-                R.F.partial[,,j][lower.tri(R.F.partial[,,j])] = Rj[lower.tri(Rj)]
+                R.F.partial[,,j] <- Fj
+                R.F.partial[,,j][lower.tri(R.F.partial[,,j])] <- Rj[lower.tri(Rj)]
                 
-                score[cluster==j,] = data[cluster==j,]%*%res[[9]][,,j]
+                score[cluster==j,] <- data[cluster==j,]%*%res[[9]][,,j]
                 
-                evptv[,,j][1,] = diag(Fj)
-                evptv[,,j][2,] = diag(Fj)/sum(diag(Fj))*100
+                evptv[,,j][1,] <- diag(Fj)
+                evptv[,,j][2,] <- diag(Fj)/sum(diag(Fj))*100
               }
               
-              score = cbind(score, cluster)
-              colnames(score) = c(paste("PC",c(1:n.var),sep=""), "cluster")
-              res[[10]] = R.F.partial
-              res[[11]] = score
-              res[[12]] = evptv
+              score <- cbind(score, cluster)
+              colnames(score) <- c(paste("PC",c(1:n.var),sep=""), "cluster")
+              res[[10]] <- R.F.partial
+              res[[11]] <- score
+              res[[12]] <- evptv
               
-              names(res)[c(7:12)] = c("q.common", "covmats.cpcq", "B.partial", "R.F.partial", "scores","EVPTV")
-              dimnames(res[[8]]) = list(varnames,varnames,paste("Group",1:no.groups, sep = ""))
-              dimnames(res[[9]]) = list(varnames,paste("PC",c(1:n.var),sep=""),paste("Group",1:no.groups, sep = ""))
+              names(res)[c(7:12)] <- c("q.common", "covmats.cpcq", "B.partial", "R.F.partial", "scores","EVPTV")
+              dimnames(res[[8]]) <- list(varnames,varnames,paste("Group",1:no.groups, sep = ""))
+              dimnames(res[[9]]) <- list(varnames,paste("PC",c(1:n.var),sep=""),paste("Group",1:no.groups, sep = ""))
               
               break
             }
@@ -3519,52 +3550,51 @@ flury.hierarchy = function(data, covmats, nvec, n.var, cluster, alpha=0.05, mode
         
       }else{
         cat("3 Accept CPC Model", end="\n")
-        cpc = 1
-        res[[3]] = cpc
-        res[[7]] = res.cpc$covmats.cpc
-        names(res)[7] = "covmats.cpc"
-        dimnames(res[[7]]) = list(varnames,varnames,paste("Group",1:no.groups, sep = ""))
+        cpc <- 1
+        res[[3]] <- cpc
+        res[[7]] <- res.cpc$covmats.cpc
+        names(res)[7] <- "covmats.cpc"
+        dimnames(res[[7]]) <- list(varnames,varnames,paste("Group",1:no.groups, sep = ""))
         
-        score = data%*%B.cpc
-        R.F.cpc = array(0, c(n.var, n.var, no.groups), dimnames = list(c(),c(),paste("Group",1:no.groups, sep = "")))
-        evptv = array(0, c(2, n.var, no.groups), 
+        score <- data%*%B.cpc
+        R.F.cpc <- array(0, c(n.var, n.var, no.groups), dimnames = list(c(),c(),paste("Group",1:no.groups, sep = "")))
+        evptv <- array(0, c(2, n.var, no.groups), 
                       dimnames = list(c("Eigenvalues", "Percentage of total variation"),
                                       paste("PC",c(1:n.var),sep=""),paste("Group",1:no.groups, sep = "")))
         for(j in 1:no.groups){
-          Fj = t(B.cpc)%*%covmats[,,j]%*%B.cpc # covariance of score 
-          lambda.inv.sq.rt = diag(1/sqrt(diag(Fj)))
-          Rj = lambda.inv.sq.rt%*%Fj%*%lambda.inv.sq.rt # correlation of score
+          Fj <- t(B.cpc)%*%covmats[,,j]%*%B.cpc # covariance of score 
+          lambda.inv.sq.rt <- diag(1/sqrt(diag(Fj)))
+          Rj <- lambda.inv.sq.rt%*%Fj%*%lambda.inv.sq.rt # correlation of score
           
-          R.F.cpc[,,j] = Fj
-          R.F.cpc[,,j][lower.tri(R.F.cpc[,,j])] = Rj[lower.tri(Rj)]
+          R.F.cpc[,,j] <- Fj
+          R.F.cpc[,,j][lower.tri(R.F.cpc[,,j])] <- Rj[lower.tri(Rj)]
           
-          evptv[,,j][1,] = diag(Fj)
-          evptv[,,j][2,] = diag(Fj)/sum(diag(Fj))*100
+          evptv[,,j][1,] <- diag(Fj)
+          evptv[,,j][2,] <- diag(Fj)/sum(diag(Fj))*100
         }
-        score = cbind(score, cluster)
-        colnames(score) = c(paste("PC",c(1:n.var),sep=""), "cluster")
-        res[[8]] = R.F.cpc
-        res[[9]] = score
-        res[[10]] = evptv
+        score <- cbind(score, cluster)
+        colnames(score) <- c(paste("PC",c(1:n.var),sep=""), "cluster")
+        res[[8]] <- R.F.cpc
+        res[[9]] <- score
+        res[[10]] <- evptv
         
-        
-        names(res)[c(7:10)] = c("covmats.cpc", "R.F.cpc", "scores", "EVPTV")
+        names(res)[c(7:10)] <- c("covmats.cpc", "R.F.cpc", "scores", "EVPTV")
       }
     }else{
       cat("2 Accept Proportionality Model", end="\n")
-      prop = 1
-      res[[2]] = prop
-      res[[7]] = res.prop$covmats.prop
-      names(res)[7] = "covmats.prop"
-      dimnames(res[[7]]) = list(varnames,varnames,paste("Group",1:no.groups, sep = ""))
+      prop <- 1
+      res[[2]] <- prop
+      res[[7]] <- res.prop$covmats.prop
+      names(res)[7] <- "covmats.prop"
+      dimnames(res[[7]]) <- list(varnames,varnames,paste("Group",1:no.groups, sep = ""))
     }
   }else{
     cat("1 Accept Equality Model", end="\n")
-    equal = 1
-    res[[1]] = equal
-    res[[7]] = res.equal$covmats.equal
-    names(res)[7] = "covmats.equal"
-    dimnames(res[[7]]) = list(varnames,varnames,paste("Group",1:no.groups, sep = ""))
+    equal <- 1
+    res[[1]] <- equal
+    res[[7]] <- res.equal$covmats.equal
+    names(res)[7] <- "covmats.equal"
+    dimnames(res[[7]]) <- list(varnames,varnames,paste("Group",1:no.groups, sep = ""))
   }
   
   cat("\n")

@@ -22,27 +22,15 @@ adjacency <- get_adjacency_stream(binaryIDs_obj) # defined in source.R
 
 shreve_order <- compute_shreve(adjacency) # defined in source.R 
 
-# generate SSN obj
-ssn_Geum <- importSSN_stream(shreve_obj = shreve_order, location="Full", multipleplaces=TRUE) 
-
-
-# =============================== #
-#  compute spatial weight matrix  #
-# =============================== #
-# afvcol="shreve" works well b/c shreve ratio = addfunccol ratio 
-spatial.wt_Geum <- createWeightS_SC(ssndata=ssn_Geum, afvcol="shreve", adjacency=adjacency) 
-
-colnames(spatial.wt_Geum) <-
-  as.character(ssn_Geum@obspoints@SSNPoints[[1]]@point.data['X'][[1]])
-
-rownames(spatial.wt_Geum) <-
-  as.character(ssn_Geum@obspoints@SSNPoints[[1]]@point.data['X'][[1]])
-
-
 # ========================== #
 #  data load and preprocess  #
 # ========================== #
+# data_past <- readRDS("/home/kyu9510/pca_on_river/Data/ProcessedData/Geum.RDS")
+ssn_Geum <- importSSN_stream_past(shreve_obj = shreve_order, location="Full", multipleplaces=TRUE) 
+colnames(ssn_Geum@obspoints@SSNPoints[[1]]@point.data)[which(colnames(ssn_Geum@obspoints@SSNPoints[[1]]@point.data) == "위도.Degree.")] = "lat"
+colnames(ssn_Geum@obspoints@SSNPoints[[1]]@point.data)[which(colnames(ssn_Geum@obspoints@SSNPoints[[1]]@point.data) == "경도.Degree.")] = "lon"
 data <- readRDS("/home/kyu9510/pca_on_river/Data/ProcessedData/Geum2020(extended).RDS")
+
 # TN: Total nitrogen
 # temp: Water temperature 
 # ph: Hydrogen ion concentration
@@ -59,13 +47,18 @@ head(data$normaldata_TOC)
 
 # delete unused point (Samgacheon (삼가천), Seokcheon (석천), Mihocheon4 (미호천4))
 # and Yudeungcheon A (유등천A) do not have observations)
-remove.cand <- which(colnames(data$normaldata_TOC)%in%c("삼가천", "석천", "미호천4", "유등천A"))
+remove.cand <- which(colnames(data$normaldata_TOC) %in% c("삼가천", "석천", "미호천4", "유등천A"))
 data$normaldata_TOC <- data$normaldata_TOC[,-remove.cand ]
+remove.cand <- which(data$eventplace$X %in% c("삼가천", "석천", "미호천4", "유등천A"))
+data$eventplace = data$eventplace[-remove.cand, ]
+colnames(data$eventplace)[which(colnames(data$eventplace) == "위도.Degree.")] = "lat"
+colnames(data$eventplace)[which(colnames(data$eventplace) == "경도.Degree.")] = "lon"
+rownames(data$eventplace) = 1:127
 
 # unobserved value 0 -> NA
-for(ii in 1:ncol(data$normaldata_TOC)){
-  if(length(which(data$normaldata_TOC[,ii]==0))!=0){
-    data$normaldata_TOC[which(data$normaldata_TOC[,ii]==0),ii] <- NA
+for(i in 1:ncol(data$normaldata_TOC)){
+  if(length(which(data$normaldata_TOC[,i]==0))!=0){
+    data$normaldata_TOC[which(data$normaldata_TOC[,i]==0),i] <- NA
   }
 }
 
@@ -93,6 +86,29 @@ normaldata_TOC_log['season'] <- paste(sapply(strsplit(normaldata_TOC_log$month, 
 normaldata_TOC_log['week'] <- strftime(normaldata_TOC_log$day, format = "%Y-%V")
 normaldata_TOC_log['year'] <- format(as.Date(rownames(as.data.frame(normaldata_TOC_log)), "%Y-%m-%d"), "%Y")
 
+flow_network_original <- line2network(path = "/home/kyu9510/pca_on_river/Data/ProcessedData/", layer="Geum", tolerance =  0.000001, reproject ="+proj=longlat +datum=WGS84", supplyprojection = NULL)
+
+# generate SSN obj
+# ssn_Geum <- importSSN_stream(data = data, flow_network_original = flow_network_original, 
+#                              shreve_obj = shreve_order, mouth_node = 614) 
+
+
+# =============================== #
+#  compute spatial weight matrix  #
+# =============================== #
+# afvcol="shreve" works well b/c shreve ratio = addfunccol ratio 
+
+spatial.wt_Geum <- createWeightS_from_ssn(ssndata=ssn_Geum, afvcol="shreve", adjacency=adjacency)
+# spatial.wt_Geum <- createWeightS_from_ssn(ssndata=ssn_Geum, afvcol="shreve", adjacency=adjacency) 
+
+colnames(spatial.wt_Geum) <-
+  as.character(ssn_Geum@obspoints@SSNPoints[[1]]@point.data['X'][[1]])
+
+rownames(spatial.wt_Geum) <-
+  as.character(ssn_Geum@obspoints@SSNPoints[[1]]@point.data['X'][[1]])
+
+
+
 
 
 # ============================== #
@@ -101,8 +117,8 @@ normaldata_TOC_log['year'] <- format(as.Date(rownames(as.data.frame(normaldata_T
 
 # yearly average summer data
 TOC_log_summer_year <- subset(aggregate(normaldata_TOC_log[endsWith(normaldata_TOC_log$season, "summer"),], 
-                                       by = list(normaldata_TOC_log[endsWith(normaldata_TOC_log$season, "summer"),]$year), 
-                                       FUN = mean, na.rm=T), select = -c(Group.1, day, month, season, week, year))
+                                        by = list(normaldata_TOC_log[endsWith(normaldata_TOC_log$season, "summer"),]$year), 
+                                        FUN = mean, na.rm=T), select = -c(Group.1, day, month, season, week, year))
 
 
 # first impute missing values
@@ -128,8 +144,8 @@ Y_avg_TOC_log_summer.Tmode.completedata <-
 mean(colnames(Y_avg_TOC_log_summer.Tmode.completedata) == colnames(spatial.wt_Geum))
 
 rownames(Y_avg_TOC_log_summer.Tmode.completedata) <- aggregate(normaldata_TOC_log[endsWith(normaldata_TOC_log$season, "summer"),], 
-                                                              by = list(normaldata_TOC_log[endsWith(normaldata_TOC_log$season, "summer"),]$year), 
-                                                              FUN = mean, na.rm=T)$Group.1
+                                                               by = list(normaldata_TOC_log[endsWith(normaldata_TOC_log$season, "summer"),]$year), 
+                                                               FUN = mean, na.rm=T)$Group.1
 
 # rename from 1 to 127
 colnames(Y_avg_TOC_log_summer.Tmode.completedata) <- 1:127
@@ -168,27 +184,8 @@ annually_temporal_summer.wt_Geum <- createWeightT(n = nrow(Y_avg_TOC_log_summer.
 # ============================ #
 #  upstream distance d-matrix  #
 # ============================ #
-dmat <- matrix(0, nrow=nrow(spatial.wt_Geum), ncol=ncol(spatial.wt_Geum))
-rownames(dmat) <- rownames(spatial.wt_Geum) 
-colnames(dmat) <- colnames(spatial.wt_Geum)
+dmat <- calculate_UpstreamDist(ssn_Geum, spatial.wt_Geum)
 
-
-updist_mat <- ssn_Geum@obspoints@SSNPoints[[1]]@network.point.coords
-rownames(updist_mat) <- 1:127
-
-for(i in 1 : nrow(dmat)){
-  for(j in 1 : ncol(dmat)){
-    if(spatial.wt_Geum[i,j]!=0){
-      dmat[i,j] <- abs(updist_mat[colnames(dmat)[j],'DistanceUpstream'] -
-                        updist_mat[colnames(dmat)[i],'DistanceUpstream'])
-    }
-    else{
-      dmat[i,j] <- max(updist_mat['DistanceUpstream'])*100 # for calculation, set very large value instead of Inf
-      # dmat[i,j] = Inf
-    }
-    
-  }
-}
 
 # plot(ssn_Geum, "shreve", cex=1) # plot general plot
 # plot(ssn_Geum, cex=0.8, col="red", xlab="lon", ylab="lat")
@@ -197,7 +194,7 @@ for(i in 1 : nrow(dmat)){
 # =========================== #
 #  flow-directed PCA results  #
 # =========================== #
-coords_Geum <- getSSNdata.frame(ssn_Geum, "Obs")[, c("경도.Degree.", "위도.Degree.")]
+coords_Geum <- getSSNdata.frame(ssn_Geum, "Obs")[, c("lon", "lat")]
 colnames(coords_Geum) <- c("lon","lat")
 
 Y_avg_TOC_log_summer.Tmode.pca.all <- stpca(x = Y_avg_TOC_log_summer.Tmode.completedata,
@@ -376,17 +373,17 @@ pcpca.result.FG <- flury.hierarchy(data = as.matrix(dls@data[,1:n.var]), covmats
 q <- 2
 
 B <- array(NA, c(n.var, n.var, n.cls), 
-          dimnames = list(colnames(dls@data[,1:n.var]), paste("PC",1:n.var, sep = ""), 
-                          paste("Group",1:n.cls, sep = ""))) 
+           dimnames = list(colnames(dls@data[,1:n.var]), paste("PC",1:n.var, sep = ""), 
+                           paste("Group",1:n.cls, sep = ""))) 
 
 score <- array(NA, c(nrow(spatial.wt_Geum), n.var), 
-              dimnames = list(colnames(spatial.wt_Geum), paste("PC",1:n.var, sep = "")))
+               dimnames = list(colnames(spatial.wt_Geum), paste("PC",1:n.var, sep = "")))
 
 for(i in 1:n.cls){
   B[,,i] <- t(solve(t.wt))%*%B.partial(covmats=S, nvec=nvec, B=pcpca.result.FG$B.cpc,
-                                    commonvec.order = pcpca.result.FG$common_order, q=q)[,,i]
+                                       commonvec.order = pcpca.result.FG$common_order, q=q)[,,i]
   score[dls$cluster.pca.river.pc12==i,] <- as.matrix(scale(dls@data[,1:n.var], 
-                                                     center=TRUE)[dls$cluster.pca.river.pc12==i,])%*%t.wt%*%
+                                                           center=TRUE)[dls$cluster.pca.river.pc12==i,])%*%t.wt%*%
     B.partial(covmats=S, nvec=nvec, B=pcpca.result.FG$B.cpc, commonvec.order = pcpca.result.FG$common_order, q=q)[,,i]
 }
 
@@ -394,18 +391,18 @@ for(i in 1:n.cls){
 
 # apply CPC(2) model 
 res <- cpc::cpcq.test(covmats = S, nvec = nvec, 
-                     B = pcpca.result.FG$B.cpc[,pcpca.result.FG$common_order], q = q)
+                      B = pcpca.result.FG$B.cpc[,pcpca.result.FG$common_order], q = q)
 
 # eigenvalue & proportion of total variance 
 evptv <- array(0, c(2, n.var, n.cls), 
-              dimnames = list(c("Eigenvalues", "Percentage of total variation"),
-                              paste("PC",c(1:n.var),sep=""),paste("Group",1:n.cls, sep = "")))
+               dimnames = list(c("Eigenvalues", "Percentage of total variation"),
+                               paste("PC",c(1:n.var),sep=""),paste("Group",1:n.cls, sep = "")))
 
 for(j in 1:n.cls){
   Fj <- t(B.partial(covmats=S, nvec=nvec, B=pcpca.result.FG$B.cpc,
-                   commonvec.order = pcpca.result.FG$common_order, q=q)[,,j])%*%
+                    commonvec.order = pcpca.result.FG$common_order, q=q)[,,j])%*%
     S[,,j]%*%B.partial(covmats=S, nvec=nvec, B=pcpca.result.FG$B.cpc,
-                        commonvec.order = pcpca.result.FG$common_order, q=q)[,,j] # covariance of score 
+                       commonvec.order = pcpca.result.FG$common_order, q=q)[,,j] # covariance of score 
   lambda.inv.sq.rt <- diag(1/sqrt(diag(Fj)))
   # Rj = lambda.inv.sq.rt%*%Fj%*%lambda.inv.sq.rt # correlation of score
   

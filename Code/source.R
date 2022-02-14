@@ -26,8 +26,6 @@ createWeightS_SC <- function (ssndata, afvcol="addfunccol", adjacency) {
   
   adjacency_old <- adjacency
   
-  # x@obspoints@SSNPoints[[1]]@point.data$addfunccol
-  
   if(class(ssndata)[1]!="SpatialStreamNetwork"){
     stop("ssndata must be a SpatialStreamNetwork class")
   }else if( !(afvcol %in% names(ssndata@obspoints@SSNPoints[[1]]@point.data) )){
@@ -36,9 +34,6 @@ createWeightS_SC <- function (ssndata, afvcol="addfunccol", adjacency) {
     stop("you must check whether (upDist, rid, pid) are in your SpatialStreamNetwork object" )
   }
   
-  #for(i in 1:length(unique(ssndata@network.line.coords$NetworkID))){
-  #  
-  #}
   n.data <- nrow(ssndata@obspoints@SSNPoints[[1]]@point.data)
   
   binary_rid <- adjacency_old$rid_bid[as.numeric(ssndata@obspoints@SSNPoints[[1]]@point.data$rid),2]
@@ -111,11 +106,11 @@ createWeightS_SC <- function (ssndata, afvcol="addfunccol", adjacency) {
 }
 
 
-########################################
-##CODES related to the SSN and smnet package
-########################################
+# ============================================ #
+#  CODES related to the SSN and smnet package  #
+# ============================================ #
 initint2_stream <- function(example_network, adjacency, linear=TRUE, MyRivernetwork=NULL){
-  #example_network: should be SpatialStreamNetwork class from SSN package
+  # example_network: should be SpatialStreamNetwork class from SSN package
   if(linear==FALSE & is.null(MyRivernetwork)==TRUE){
     stop("For nonlinear stream network, riverdist object is needed.")
   }
@@ -184,7 +179,7 @@ initint2_stream <- function(example_network, adjacency, linear=TRUE, MyRivernetw
       ind <- which(example_network@obspoints@SSNPoints[[1]]@network.point.coords$SegmentID == i)
       I[ind] <- I[ind] + example_network@data$Length[i]
       I_lines_new <- new("ILines", Lines=example_network@lines[[i]]@Lines, ID=example_network@lines[[i]]@ID, weight=1, range= c(1, nrow(example_network@lines[[i]]@Lines[[1]]@coords)))
-      #I_lines[[ind]] <- c(I_lines[[ind]], example_network@lines[[i]])
+      # I_lines[[ind]] <- c(I_lines[[ind]], example_network@lines[[i]])
       I_lines[[ind]] <- c(I_lines[[ind]], I_lines_new)
     }else{
       # when there are several points on the segment
@@ -203,7 +198,7 @@ initint2_stream <- function(example_network, adjacency, linear=TRUE, MyRivernetw
           middle_pts_imsi <- c((ordered_coords[j,1]+ordered_coords[(j+1),1])/2, (ordered_coords[j,2]+ordered_coords[(j+1),2])/2)
           middle_pts <- rbind(middle_pts, middle_pts_imsi)
         }
-        #end_pts <- example_network@lines[[i]]@Lines[[1]]@coords[order(example_network@lines[[i]]@Lines[[1]]@coords[,1]),]
+        # end_pts <- example_network@lines[[i]]@Lines[[1]]@coords[order(example_network@lines[[i]]@Lines[[1]]@coords[,1]),]
         end_pts <- example_network@lines[[i]]@Lines[[1]]@coords[,]
         middle_pts <- rbind(end_pts[1,], middle_pts, end_pts[2,])
         
@@ -222,8 +217,8 @@ initint2_stream <- function(example_network, adjacency, linear=TRUE, MyRivernetw
         # assume that each partition has the same distance within each segment and divide 
         
         
-        #example_network@obspoints@SSNPoints[[1]]@point.data$rid[ind]
-        #example_network@obspoints@SSNPoints[[1]]@point.data$segid[ind]
+        # example_network@obspoints@SSNPoints[[1]]@point.data$rid[ind]
+        # example_network@obspoints@SSNPoints[[1]]@point.data$segid[ind]
         
         dist_combined <- rep(0, nrow(example_network@lines[[i]]@Lines[[1]]@coords))
         for(j in 1:nrow(example_network@lines[[i]]@Lines[[1]]@coords)){
@@ -255,8 +250,8 @@ initint2_stream <- function(example_network, adjacency, linear=TRUE, MyRivernetw
     }
   }
   return(list(I=I, I_lines=I_lines))
-  #I: area of node i
-  #I_lines: shows that each node i has which segement
+  # I: area of node i
+  # I_lines: shows that each node i has which segement
 }
 
 getnbrs_stream3 <- function(remove, pointsin, example_network, I_lines, adjacency, upperExtra=FALSE){
@@ -270,13 +265,13 @@ getnbrs_stream3 <- function(remove, pointsin, example_network, I_lines, adjacenc
   n_inthe_Segment <- sum(example_network@obspoints@SSNPoints[[1]]@network.point.coords$SegmentID==network_SegmentID)
   r_length <- nchar(adjacency$rid_bid[network_SegmentID,2])
   
-  #index <- setdiff()
+  # index <- setdiff()
   
   network_indexID <- example_network@obspoints@SSNPoints[[1]]@network.point.coords$SegmentID[-r]
   
-  #samestream_index: have to check whether upstream or downstream after looking at upDist
+  # samestream_index: have to check whether upstream or downstream after looking at upDist
   samestream_index <- setdiff(which(adjacency$rid_bid[network_indexID,2]==adjacency$rid_bid[network_SegmentID,2]), remove)
-  #upstream_index: upstream
+  # upstream_index: upstream
   upstream_index <- setdiff(str_which( substr(adjacency$rid_bid[network_indexID,2], start=1, stop=r_length), adjacency$rid_bid[network_SegmentID,2]), remove)
   upstream_index <- setdiff(upstream_index, samestream_index)
   
@@ -329,7 +324,7 @@ getnbrs_stream3 <- function(remove, pointsin, example_network, I_lines, adjacenc
     # when there is no point on the segment
     # find a stream segement where there exists obs.point among the nearest streams along downstream direction 
     ind_imsi <- network_SegmentID 
-    #pt_downstream_dist <- 0
+    # pt_downstream_dist <- 0
     while(TRUE){
       # find downstream
       mouth_index_imsi <- sum(as.matrix(adjacency$adjacency)[ind_imsi,]==1) # number of tributaries downstream
@@ -341,7 +336,7 @@ getnbrs_stream3 <- function(remove, pointsin, example_network, I_lines, adjacenc
         if(sum(mouth_seg_imsi==network_indexID)==0){
           # have to move on to the next segment
           ind_imsi <- mouth_seg_imsi
-          #pt_downstream_dist
+          # pt_downstream_dist
         }else{
           # when there are several monitoring sites on the segment
           # find the nearest index on the segment
@@ -416,7 +411,7 @@ getnbrs_stream <- function(remove, pointsin, example_network, I_lines, adjacency
           stream_candidate <- c(stream_candidate, n_test[jj])
         }else{
           distUpstream_index <- example_network@network.line.coords$DistanceUpstream[n_test[jj]]
-          #distUpstream_index <- example_network@network.line.coords$DistanceUpstream[segment_index]
+          # distUpstream_index <- example_network@network.line.coords$DistanceUpstream[segment_index]
           distUpstream_index_r <- example_network@network.line.coords$DistanceUpstream[segment_index_r]
           
           bid_index <- adjacency$rid_bid[segment_index,2]
@@ -456,30 +451,30 @@ getnbrs_stream <- function(remove, pointsin, example_network, I_lines, adjacency
 # construct streamPred function
 # basic rule: inverse distance weight on segment, else : regression along the stream
 streamPred <- function(pointsin, X=example_network, coeff=sims@obspoints@SSNPoints[[1]]@point.data$Sim_Values, nbrs, remove, adj=adjacency, method=c("IDW","LC"), intercept=FALSE, neighbours=NULL, adaptive=FALSE){
-  #prediction weight를 반환하는 함수다
-  #method: IDW: inverse distance weight, LC: local constant
+  # prediction weight를 반환하는 함수다
+  # method: IDW: inverse distance weight, LC: local constant
   
-  #X=example_network; coeff=sims@obspoints@SSNPoints[[1]]@point.data$Sim_Values; adj=adjacency
+  # X=example_network; coeff=sims@obspoints@SSNPoints[[1]]@point.data$Sim_Values; adj=adjacency
   
   Xcoords <- X@obspoints@SSNPoints[[1]]@point.coords
   index <- match(nbrs, pointsin)
   r <- which(pointsin == remove)
   Xneighbours <- Xcoords[index,]
   Xremove <- Xcoords[r,]
-  #Xneighbours <- Xcoords[nbrs,]
-  #Xremove <- Xcoords[remove,]
+  # Xneighbours <- Xcoords[nbrs,]
+  # Xremove <- Xcoords[remove,]
   
   if (intercept) {
-    #Xneighbours <- cbind(1, Xneighbours)
-    #Xremove <- as.row(c(1, Xremove))
+    # Xneighbours <- cbind(1, Xneighbours)
+    # Xremove <- as.row(c(1, Xremove))
   }
   
   
   if(sum(X@obspoints@SSNPoints[[1]]@point.data$pid==remove)!=0){
     updist_remove <- X@obspoints@SSNPoints[[1]]@point.data$upDist[which(X@obspoints@SSNPoints[[1]]@point.data$pid==remove)]
     reach_remove <- X@obspoints@SSNPoints[[1]]@point.data$rid[which(X@obspoints@SSNPoints[[1]]@point.data$pid==remove)]
-    #updist_remove <- X@obspoints@SSNPoints[[1]]@point.data$upDist[which(X@obspoints@SSNPoints[[1]]@point.data$pid==r)]
-    #reach_remove <- X@obspoints@SSNPoints[[1]]@point.data$rid[which(X@obspoints@SSNPoints[[1]]@point.data$pid==r)]
+    # updist_remove <- X@obspoints@SSNPoints[[1]]@point.data$upDist[which(X@obspoints@SSNPoints[[1]]@point.data$pid==r)]
+    # reach_remove <- X@obspoints@SSNPoints[[1]]@point.data$rid[which(X@obspoints@SSNPoints[[1]]@point.data$pid==r)]
     addfunccol_remove <- X@obspoints@SSNPoints[[1]]@point.data$shreve[which(X@obspoints@SSNPoints[[1]]@point.data$pid==remove)]
   }else{
     updist_remove <- X@predpoints@SSNPoints[[1]]@point.data$upDist[length(X@predpoints@SSNPoints[[1]]@point.data$upDist)]
@@ -489,19 +484,19 @@ streamPred <- function(pointsin, X=example_network, coeff=sims@obspoints@SSNPoin
   rid_remove <- reach_remove
   rid_nbrs <- X@obspoints@SSNPoints[[1]]@point.data$rid[index]
   
-  #length_vec <- rep(0, length(nbrs)) # length vec의 inverse weight?
+  # length_vec <- rep(0, length(nbrs)) # length vec의 inverse weight?
   weight_vec <- rep(0, length(nbrs)) # calculate weight from the beginning -> normalize
   
   if(length(nbrs)>=2){
     
     for(i in 1:length(nbrs)){
       nb_index <- nbrs[i]
-      #nb_index <- index[i]
+      # nb_index <- index[i]
       if(method=="IDW" | sum(rid_nbrs==rid_remove)==2){
         # have to calculate distances between each nbr point and removeed point
         
         updist_nb_index <- X@obspoints@SSNPoints[[1]]@point.data$upDist[which(X@obspoints@SSNPoints[[1]]@point.data$pid==nb_index)]
-        #updist_remove <- X@obspoints@SSNPoints[[1]]@point.data$upDist[which(X@obspoints@SSNPoints[[1]]@point.data$pid==remove)]
+        # updist_remove <- X@obspoints@SSNPoints[[1]]@point.data$upDist[which(X@obspoints@SSNPoints[[1]]@point.data$pid==remove)]
         
         weight_vec[i] <- 1/abs(updist_nb_index-updist_remove)
         
@@ -509,12 +504,12 @@ streamPred <- function(pointsin, X=example_network, coeff=sims@obspoints@SSNPoin
         # weight based on segment?
         
         addfunccol_nb_index <- X@obspoints@SSNPoints[[1]]@point.data$shreve[which(X@obspoints@SSNPoints[[1]]@point.data$pid==nb_index)]
-        #addfunccol_remove <- X@obspoints@SSNPoints[[1]]@point.data$addfunccol[which(X@obspoints@SSNPoints[[1]]@point.data$pid==remove)]
+        # addfunccol_remove <- X@obspoints@SSNPoints[[1]]@point.data$addfunccol[which(X@obspoints@SSNPoints[[1]]@point.data$pid==remove)]
         
         weight_vec[i] <- min(addfunccol_nb_index, addfunccol_remove)/max(addfunccol_nb_index, addfunccol_remove)
       }
     }
-    #normalizing weight vector
+    # normalizing weight vector
     weights <- weight_vec/sum(weight_vec)
   }else{
     # length ==1 -> don't need to fix
@@ -533,7 +528,7 @@ streamPred <- function(pointsin, X=example_network, coeff=sims@obspoints@SSNPoin
 
 PointsUpdate_stream <- function (X=example_network, coeff, nbrs, index=NULL, remove, pointsin, weights, lengths=I, lengths_lines=I_lines, method="LC", stream=TRUE, linear=TRUE) 
 {
-  #X=example_network; lengths=I; lengths_lines=I_lines; method="LC"; index=match(nbrs, pointsin)
+  # X=example_network; lengths=I; lengths_lines=I_lines; method="LC"; index=match(nbrs, pointsin)
   r <- which(pointsin == remove)
   N <- length(pointsin)
   weights_imsi <- (1/weights)/sum(1/weights)
@@ -691,9 +686,9 @@ PointsUpdate_stream <- function (X=example_network, coeff, nbrs, index=NULL, rem
 }
 
 
-#lifting forward step
+# lifting forward step
 fwtnp_stream <- function(example_network, I, I_lines, adjacency, nkeep=2, linear=FALSE, do.W = TRUE, varonly = FALSE){
-  #do.W = TRUE; varonly = FALSE; linear=FALSE; nkeep=2
+  # do.W = TRUE; varonly = FALSE; linear=FALSE; nkeep=2
   
   removelist <- NULL
   lengthsremove <- NULL
@@ -735,11 +730,11 @@ fwtnp_stream <- function(example_network, I, I_lines, adjacency, nkeep=2, linear
     removelist[j] <- remove
     print(paste("remove point is ", remove))
     
-    #points(example_network@obspoints@SSNPoints[[1]]@point.coords[which(pointsin==remove),1] , example_network@obspoints@SSNPoints[[1]]@point.coords[which(pointsin==remove),2], cex=2, pch=5, col="red" )
+    # points(example_network@obspoints@SSNPoints[[1]]@point.coords[which(pointsin==remove),1] , example_network@obspoints@SSNPoints[[1]]@point.coords[which(pointsin==remove),2], cex=2, pch=5, col="red" )
     
-    #X_dataframe <- as.data.frame(t(X))
+    # X_dataframe <- as.data.frame(t(X))
     
-    #have to make getnbrs function
+    # have to make getnbrs function
     nbrs_obj <- getnbrs_stream3(remove, pointsin, example_network, I_lines, adjacency)
     nbrs <- nbrs_obj$nbrs
     nbrs_upstream <- nbrs_obj$nbrs_upstream
@@ -811,42 +806,42 @@ fwtnp_stream <- function(example_network, I, I_lines, adjacency, nkeep=2, linear
     pointsin <- setdiff(pointsin, remove)
     
     ## example network itself needs to be updated: refer subsetSSN function
-    #if(j==1){
-    #  #example_network@predpoints <- example_network@obspoints
-    #  #example_network@predpoints@SSNPoints[[1]]@network.point.coords <- example_network@predpoints@SSNPoints[[1]]@network.point.coords[remove,]
-    #  #example_network@predpoints@SSNPoints[[1]]@point.coords <- example_network@predpoints@SSNPoints[[1]]@point.coords[remove,]
-    #  #example_network@predpoints@SSNPoints[[1]]@point.data <- example_network@predpoints@SSNPoints[[1]]@point.data[remove,]
-    #}else{
+    # if(j==1){
+    #   #example_network@predpoints <- example_network@obspoints
+    #   #example_network@predpoints@SSNPoints[[1]]@network.point.coords <- example_network@predpoints@SSNPoints[[1]]@network.point.coords[remove,]
+    #   #example_network@predpoints@SSNPoints[[1]]@point.coords <- example_network@predpoints@SSNPoints[[1]]@point.coords[remove,]
+    #   #example_network@predpoints@SSNPoints[[1]]@point.data <- example_network@predpoints@SSNPoints[[1]]@point.data[remove,]
+    # }else{
     #  
-    #}
+    # }
     example_network@predpoints@SSNPoints[[1]]@network.point.coords <- rbind(example_network@predpoints@SSNPoints[[1]]@network.point.coords, example_network@obspoints@SSNPoints[[1]]@network.point.coords[r,])
     example_network@predpoints@SSNPoints[[1]]@point.coords <- rbind(example_network@predpoints@SSNPoints[[1]]@point.coords, matrix(example_network@obspoints@SSNPoints[[1]]@point.coords[r,], nrow=1, ncol=2))
     example_network@predpoints@SSNPoints[[1]]@point.data <- rbind(example_network@predpoints@SSNPoints[[1]]@point.data, example_network@obspoints@SSNPoints[[1]]@point.data[r,c(1:ncol(example_network@predpoints@SSNPoints[[1]]@point.data))])
-    #if(nrow(example_network@predpoints@SSNPoints[[1]]@network.point.coords)!=1){
-    #example_network@predpoints@SSNPoints[[1]]@network.point.coords <- example_network@predpoints@SSNPoints[[1]]@network.point.coords[nrow(example_network@predpoints@SSNPoints[[1]]@network.point.coords),]
-    #example_network@predpoints@SSNPoints[[1]]@point.coords <- matrix(example_network@predpoints@SSNPoints[[1]]@point.coords[nrow(example_network@predpoints@SSNPoints[[1]]@point.coords),], nrow=ncol(example_network@predpoints@SSNPoints[[1]]@point.coords), ncol=1)
-    #example_network@predpoints@SSNPoints[[1]]@point.data <- example_network@predpoints@SSNPoints[[1]]@point.data[nrow(example_network@predpoints@SSNPoints[[1]]@point.data),]
-    #}
+    # if(nrow(example_network@predpoints@SSNPoints[[1]]@network.point.coords)!=1){
+    # example_network@predpoints@SSNPoints[[1]]@network.point.coords <- example_network@predpoints@SSNPoints[[1]]@network.point.coords[nrow(example_network@predpoints@SSNPoints[[1]]@network.point.coords),]
+    # example_network@predpoints@SSNPoints[[1]]@point.coords <- matrix(example_network@predpoints@SSNPoints[[1]]@point.coords[nrow(example_network@predpoints@SSNPoints[[1]]@point.coords),], nrow=ncol(example_network@predpoints@SSNPoints[[1]]@point.coords), ncol=1)
+    # example_network@predpoints@SSNPoints[[1]]@point.data <- example_network@predpoints@SSNPoints[[1]]@point.data[nrow(example_network@predpoints@SSNPoints[[1]]@point.data),]
+    # }
     
     example_network@obspoints@SSNPoints[[1]]@network.point.coords <- example_network@obspoints@SSNPoints[[1]]@network.point.coords[-r,]
     example_network@obspoints@SSNPoints[[1]]@point.coords <- example_network@obspoints@SSNPoints[[1]]@point.coords[-r,]
     example_network@obspoints@SSNPoints[[1]]@point.data <- example_network@obspoints@SSNPoints[[1]]@point.data[-r,]
     
-    #I update
+    # I update
     I <- l1$lengths[-r]
-    #I_lines update (it is impossible to subset list typelist)
+    # I_lines update (it is impossible to subset list typelist)
     I_lines <- l1$lengths_lines
     
     
-    ##plotting new data object
+    ## plotting new data object
     SSN::plot.SpatialStreamNetwork(x=example_network, main=paste("Level", j), VariableName = "Sim_Values", color.palette=rainbow(12), nclasses=10, breaktype = "quantile", brks = NULL, PredPointsID = NULL, add = FALSE, addWithLegend = FALSE, lwdLineCol = "addfunccol", lwdLineEx = 3, lineCol = "black")
     #need to be corrected
     
-    #if(length(pointsin)<=nkeep | sum(as.matrix(adjacency$adjacency)[pointsin, pointsin])==0){
+    # if(length(pointsin)<=nkeep | sum(as.matrix(adjacency$adjacency)[pointsin, pointsin])==0){
     if(length(pointsin)<=nkeep){
       break
     }else{
-      #next level
+      # next level
       
       j = j+1
     }
@@ -861,20 +856,20 @@ fwtnp_stream <- function(example_network, I, I_lines, adjacency, nkeep=2, linear
               W = W, v=v))
 }
 
-#lifting backward step
+# lifting backward step
 
 
 UndoPointsUpdate_stream <- function (X, coeff, nbrs, index, remove, r, N, pointsin, gamweights, lengths, lengthrem, I_lines, stream=TRUE) 
 {
-  #I_lines=X$I_lines; X=X$network;  stream=TRUE
+  # I_lines=X$I_lines; X=X$network;  stream=TRUE
   
   
   # have to construct a function reversing stream network
   gamweights_imsi <- (1/gamweights)/sum(1/gamweights)
   if(stream==TRUE){
     # X$network@obspoints needs to be reconstructed
-    #locID(=number of itself), upDist, pid(=number of itself), rid, ratio, shreve, addfunccol, X, X2, Sim_Values
-    #point.data_reconstruct <- c()
+    # locID(=number of itself), upDist, pid(=number of itself), rid, ratio, shreve, addfunccol, X, X2, Sim_Values
+    # point.data_reconstruct <- c()
     
     rid_remove <- X@predpoints@SSNPoints[[1]]@point.data$rid[length(X@predpoints@SSNPoints[[1]]@point.data$rid)]
     rid_nbrs <- X@obspoints@SSNPoints[[1]]@point.data$rid[index]
@@ -889,12 +884,12 @@ UndoPointsUpdate_stream <- function (X, coeff, nbrs, index, remove, r, N, points
       if(sum(rid_nbrs==rid_remove)==2){
         # removed points and neighbors are located on the same segment
         coords_nbrs <- X@obspoints@SSNPoints[[1]]@point.coords[index,]
-        #midpt_nbrs <- c(mean(coords_nbrs[,1]), mean(coords_nbrs[,2]))
+        # midpt_nbrs <- c(mean(coords_nbrs[,1]), mean(coords_nbrs[,2]))
         
         nbrs_order_index <- order(X@obspoints@SSNPoints[[1]]@point.data$upDist[index], decreasing=T)
         ordered_nbrs_coords <- X@obspoints@SSNPoints[[1]]@point.coords[index[nbrs_order_index],]
         
-        #middle_pts <- c() # vector for centroids
+        # middle_pts <- c() # vector for centroids
         middle_pts_imsi <- c((ordered_nbrs_coords[1,1]+remove_coords[1])/2,  (ordered_nbrs_coords[1,2]+remove_coords[2])/2)
         middle_pts_imsi2 <- c((ordered_nbrs_coords[2,1]+remove_coords[1])/2,  (ordered_nbrs_coords[2,2]+remove_coords[2])/2)
         middle_pts <- rbind(middle_pts_imsi, middle_pts_imsi2)
@@ -968,20 +963,20 @@ UndoPointsUpdate_stream <- function (X, coeff, nbrs, index, remove, r, N, points
   }
   
   alpha <- matrix(0, 1, length(nbrs))
-  #if ((r > 1) & (r <= N)) {
+  # if ((r > 1) & (r <= N)) {
   alpha <- lengths[index] * lengthrem/(sum(lengths[index]^2))
   coeff[nbrs] <- coeff[nbrs] - alpha * coeff[remove]
   lengths[index] <- as.row(lengths[index])
   prod <- gamweights * lengthrem
   prod <- as.row(prod)
   lengths[index] <- lengths[index] - prod
-  #}
-  #if ((r == 1) | (r == (N + 1))) {
-  #  q <- which(pointsin == nbrs)
-  #  alpha <- lengthrem/lengths[q]
-  #  coeff[pointsin[q]] <- coeff[pointsin[q]] - alpha * coeff[remove]
-  #  lengths[q] <- lengths[q] - lengthrem
-  #}
+  # }
+  # if ((r == 1) | (r == (N + 1))) {
+  #   q <- which(pointsin == nbrs)
+  #   alpha <- lengthrem/lengths[q]
+  #   coeff[pointsin[q]] <- coeff[pointsin[q]] - alpha * coeff[remove]
+  #   lengths[q] <- lengths[q] - lengthrem
+  # }
   
   return(list(coeff = coeff, lengths = lengths, alpha = alpha, I_lines=I_lines))
 }
@@ -1000,16 +995,16 @@ invtnp_stream <- function (X, coeff, lengths, lengthsremove, pointsin, removelis
     pointsin <- X$pointsin
     schemehist <- X$schemehist
     interhist <- X$interhist
-    #X <- X$network
+    # X <- X$network
   }
   
-  #X <- as.row(X)
+  # X <- as.row(X)
   coeff <- as.row(coeff)
-  #n <- length(X)
+  # n <- length(X)
   n <- length(coeff)
   N <- length(pointsin)
   m <- length(removelist) #n = N+m
-  #d <- neighbours
+  # d <- neighbours
   if (nadd > 0) {
     for (j in 1:nadd) {
       N <- length(pointsin)
@@ -1019,8 +1014,8 @@ invtnp_stream <- function (X, coeff, lengths, lengthsremove, pointsin, removelis
       index <- NULL
       index <- match(nbrs, pointsin)
       
-      #decide r index
-      #B <- (X[remove] > X[nbrs])
+      # decide r index
+      # B <- (X[remove] > X[nbrs])
       B <- (remove > nbrs)
       nt <- sum(B)
       if (nt == 0) {
@@ -1048,11 +1043,11 @@ invtnp_stream <- function (X, coeff, lengths, lengthsremove, pointsin, removelis
                            neighbours)
         }
       }else {
-        #schemehist가 null인 경우
+        # schemehist가 null인 경우
         
         res <- streamPred(pointsin,  X=X$network, coeff=coeff, nbrs, remove, adj=X$adjacency, method="LC", intercept=FALSE, neighbours=NULL)
         
-        #res <- LocalPred(pointsin, X, coeff, nbrs, remove,intercept, neighbours)
+        # res <- LocalPred(pointsin, X, coeff, nbrs, remove,intercept, neighbours)
       }
       if (length(res) == 2) {
         l <- res[[1]]
@@ -1060,8 +1055,8 @@ invtnp_stream <- function (X, coeff, lengths, lengthsremove, pointsin, removelis
         l <- res
       }
       gamweights <- l$weights
-      #UndoPointsUpdate함수의 stream version을 만들어야
-      #l1 <- UndoPointsUpdate(X, coeff, nbrs, index, remove,  r, N, pointsin, gamweights, lengths, lengthrem)
+      # UndoPointsUpdate함수의 stream version을 만들어야
+      # l1 <- UndoPointsUpdate(X, coeff, nbrs, index, remove,  r, N, pointsin, gamweights, lengths, lengthrem)
       l1 <- UndoPointsUpdate_stream(X=X$network, coeff, nbrs, index, remove, r, N, pointsin, gamweights, lengths, lengthrem, I_lines=X$I_lines, stream=TRUE)
       X$I_lines <- l1$I_lines
       coeff <- l1$coeff
@@ -1073,7 +1068,7 @@ invtnp_stream <- function (X, coeff, lengths, lengthsremove, pointsin, removelis
       if (r == 1) {
         lengths <- c(lengthrem, lengths)
         pointsin <- c(remove, pointsin)
-        #update example network
+        # update example network
         X$network@obspoints@SSNPoints[[1]]@network.point.coords <- rbind(X$network@predpoints@SSNPoints[[1]]@network.point.coords[nrow(X$network@predpoints@SSNPoints[[1]]@network.point.coords),], X$network@obspoints@SSNPoints[[1]]@network.point.coords)
         X$network@obspoints@SSNPoints[[1]]@point.coords <- rbind(X$network@predpoints@SSNPoints[[1]]@point.coords[nrow(X$network@predpoints@SSNPoints[[1]]@point.coords),], X$network@obspoints@SSNPoints[[1]]@point.coords)
         if(length_diff<=0){
@@ -1085,7 +1080,7 @@ invtnp_stream <- function (X, coeff, lengths, lengthsremove, pointsin, removelis
       if (r == (N + 1)) {
         lengths <- c(lengths, lengthrem)
         pointsin <- c(pointsin, remove)
-        #update example network
+        # update example network
         X$network@obspoints@SSNPoints[[1]]@network.point.coords <- rbind(X$network@obspoints@SSNPoints[[1]]@network.point.coords, X$network@predpoints@SSNPoints[[1]]@network.point.coords[nrow(X$network@predpoints@SSNPoints[[1]]@network.point.coords),])
         X$network@obspoints@SSNPoints[[1]]@point.coords <- rbind(X$network@obspoints@SSNPoints[[1]]@point.coords, X$network@predpoints@SSNPoints[[1]]@point.coords[nrow(X$network@predpoints@SSNPoints[[1]]@point.coords),])
         if(length_diff<=0){
@@ -1097,7 +1092,7 @@ invtnp_stream <- function (X, coeff, lengths, lengthsremove, pointsin, removelis
       if ((r > 1) & (r < (N + 1))) {
         lengths <- c(lengths[1:(r - 1)], lengthrem, lengths[r:N])
         pointsin <- c(pointsin[1:(r - 1)], remove, pointsin[r:N])
-        #update example network
+        # update example network
         X$network@obspoints@SSNPoints[[1]]@network.point.coords <- rbind(X$network@obspoints@SSNPoints[[1]]@network.point.coords[c(1:(r - 1)),], X$network@predpoints@SSNPoints[[1]]@network.point.coords[nrow(X$network@predpoints@SSNPoints[[1]]@network.point.coords),], X$network@obspoints@SSNPoints[[1]]@network.point.coords[c(r:N),])
         X$network@obspoints@SSNPoints[[1]]@point.coords <- rbind(X$network@obspoints@SSNPoints[[1]]@point.coords[c(1:(r - 1)),], X$network@predpoints@SSNPoints[[1]]@point.coords[nrow(X$network@predpoints@SSNPoints[[1]]@point.coords),], X$network@obspoints@SSNPoints[[1]]@point.coords[c(r:N),])
         if(length_diff<=0){
@@ -1106,7 +1101,7 @@ invtnp_stream <- function (X, coeff, lengths, lengthsremove, pointsin, removelis
           X$network@obspoints@SSNPoints[[1]]@point.data <- rbind(X$network@obspoints@SSNPoints[[1]]@point.data[c(1:(r - 1)),], cbind(X$network@predpoints@SSNPoints[[1]]@point.data[nrow(X$network@predpoints@SSNPoints[[1]]@point.data),], X=NA, X2=NA, Sim_Values=NA), X$network@obspoints@SSNPoints[[1]]@point.data[c(r:N),])
         }
       }
-      #delete points from predpoint
+      # delete points from predpoint
       X$network@predpoints@SSNPoints[[1]]@network.point.coords <- X$network@predpoints@SSNPoints[[1]]@network.point.coords[-nrow(X$network@predpoints@SSNPoints[[1]]@network.point.coords),]
       X$network@predpoints@SSNPoints[[1]]@point.coords <- X$network@predpoints@SSNPoints[[1]]@point.coords[-nrow(X$network@predpoints@SSNPoints[[1]]@point.coords),]
       X$network@predpoints@SSNPoints[[1]]@point.data <- X$network@predpoints@SSNPoints[[1]]@point.data[-nrow(X$network@predpoints@SSNPoints[[1]]@point.data),]
@@ -1120,48 +1115,48 @@ invtnp_stream <- function (X, coeff, lengths, lengthsremove, pointsin, removelis
 }
 
 
-########################################
-##Data-adaptive stream flow weight selection
-########################################  
+# ========================================== #
+# Data-adaptive stream flow weight selection #
+# ========================================== #
 
 
 
-########################################
-##Network poltting function in the future
-########################################
+# ======================================= #
+# Network poltting function in the future #
+# ======================================= #
 
 
 
 
-########################################
-##SpatialStreamNetwork object making function in SSN
-########################################
+# ================================================== #
+# SpatialStreamNetwork object making function in SSN #
+# ================================================== #
 importSSN_stream <- function(shreve_obj, location="Miho", multipleplaces=FALSE, RID="original"){
   # location: "Miho", "Full" 
   # multipleplaces=FALSE -> fix and sum
   # multipleplaces=TRUE -> go ahead
   
-  #netID = 1 (b/c there is one network)
+  # netID = 1 (b/c there is one network)
   
-  #(a) stream network data
+  # (a) stream network data
   edges  <- readOGR("/home/kyu9510/pca_on_river/Data/KRF_3.0_Geumgang/KRF_ver3_LINE_금강수계.shp")
-  #rownames(edges@data) <- edges@data[, "RCH_ID"]
-  #reach ID (print rid)
+  # rownames(edges@data) <- edges@data[, "RCH_ID"]
+  # reach ID (print rid)
   
-  #(b) 관측 장소 자료
+  # (b) 관측 장소 자료
   sites <- read.csv("/home/kyu9510/pca_on_river/Data/ProcessedData/금강장소(엑셀편집)UTF8.csv",header=T)
   sites <- sites[which(sites$총량==1),]
   sites <- data.frame(name= sites$이름,x=sites$경도.Degree., y=sites$위도.Degree.)
   
-  #rownames(sites@data) <- sites@data[,"pid"]
-  #rownames(sites@coords) <- sites@data[, "pid"]
+  # rownames(sites@data) <- sites@data[,"pid"]
+  # rownames(sites@coords) <- sites@data[, "pid"]
   
-  #(c) 수질 데이터 자료
+  # (c) 수질 데이터 자료
   alldata1 <- read.table("/home/kyu9510/pca_on_river/Data/ProcessedData/수질20082013.txt",sep=',', header=T)
   alldata2 <- read.table("/home/kyu9510/pca_on_river/Data/ProcessedData/수질20132018.txt",sep=',', header=T)
   alldata <- rbind(alldata1, alldata2)
   
-  #(d) 예전에 편집한 자료
+  # (d) 예전에 편집한 자료
   if(location=="Miho"){
     data <- readRDS("/home/kyu9510/pca_on_river/Data/ProcessedData/Geum(miho).RDS")
   }else if(location=="Full"){
@@ -1175,105 +1170,105 @@ importSSN_stream <- function(shreve_obj, location="Miho", multipleplaces=FALSE, 
   # mid catchments
   region_index <- unique(sapply(as.character(shape@data$RCH_ID), function(x) substr(x, start=1, stop=4)))[c(1)]
   # the first 4 digits of ID = mid catchment code
-  #3011: 미호천
-  #3012: 금강공주
-  #3008: 대청댐
-  #3007: 보청천
-  #3005: 초강
-  #3009: 갑천
-  #3013: 논산천
-  #3006: 대청댐상류
-  #3014: 금강하구언
-  #3004: 영동천
-  #3003: 무주남대천
-  #3001: 용담댐
-  #3002: 용담댐하류
-  #3310: 대청댐하류
-  #3301: 만경강(x)
-  #3303: 직소천(x)
-  #3302: 동진강(x)
-  #3101: 삽교천(x)
-  #2005: 금강상류부분(필요없음)
-  #3202: 부남방조제(x)
-  #1101, 3201: 대호방조제(x)
-  #3203: 금강서해(x)
-  #5301, 5302: 주진천(x)
+  # 3011: 미호천
+  # 3012: 금강공주
+  # 3008: 대청댐
+  # 3007: 보청천
+  # 3005: 초강
+  # 3009: 갑천
+  # 3013: 논산천
+  # 3006: 대청댐상류
+  # 3014: 금강하구언
+  # 3004: 영동천
+  # 3003: 무주남대천
+  # 3001: 용담댐
+  # 3002: 용담댐하류
+  # 3310: 대청댐하류
+  # 3301: 만경강(x)
+  # 3303: 직소천(x)
+  # 3302: 동진강(x)
+  # 3101: 삽교천(x)
+  # 2005: 금강상류부분(필요없음)
+  # 3202: 부남방조제(x)
+  # 1101, 3201: 대호방조제(x)
+  # 3203: 금강서해(x)
+  # 5301, 5302: 주진천(x)
   
-  #for(i in 1:length(region_index)){
-  #  shape_sub <- subset(shape, sapply(as.character(shape@data$RCH_ID), function(x) substr(x, start=1, stop=4)==region_index[i]) )
-  #  plot(shape, main=region_index[i])
-  #  plot(shape_sub, col="red", add=T, lwd=3)
-  #}
+  # for(i in 1:length(region_index)){
+  #   shape_sub <- subset(shape, sapply(as.character(shape@data$RCH_ID), function(x) substr(x, start=1, stop=4)==region_index[i]) )
+  #   plot(shape, main=region_index[i])
+  #   plot(shape_sub, col="red", add=T, lwd=3)
+  # }
   
   name_index <- c("미호천", "금강공주", "대청댐", "보청천", "초강", "갑천", "논산천", "대청댐상류", "금강하구언", "영동천", "무주남대천", "용담댐", "용담댐하류", "대청댐하류")
   name_subindex <- list()
   name_subindex[[1]] <- c("미호댐", "원남댐", "병천천상류", "병천천하류", "보강천", "미호천중류", "미호천상류", "작천보", "한천", "백곡천", "조천", "석화수위표", "미호천하류", "무심천", "백곡댐" ) #15개
   name_subindex[[2]] <- c("세종보", "지천상류", "지천합류후", "어천합류후", "용수천", "백제보", "석성천", "규암수위표", "금천", "논산천합류전", "유구천", "공주보", "대교천", "공주수위표") #14개
-  name_subindex[[3]] <- c("대청댐", "대청댐조정지", "소옥천상류", "소옥천하류", "대청댐상류") #5개
-  name_subindex[[4]] <- c("항건천", "보청천중류", "삼가천합류후", "삼가천", "보청천상류", "보청천하류") #6개
-  name_subindex[[5]] <- c("석천", "초강상류", "초강하류") #3개
-  name_subindex[[6]] <- c("갑천하류", "유성수위표", "갑천상류", "대전천", "유등천상류", "유등천하류") #6개
-  name_subindex[[7]] <- c("노성천", "논산천하류", "강경천", "논산천상류", "탑정댐") #5개
-  name_subindex[[8]] <- c("보청천합류전") #1개
-  name_subindex[[9]] <- c("입포수위표", "길산천", "금강하구언") #3개
-  name_subindex[[10]] <- c("영동천", "봉황천하류", "초강합류후", "봉황천상류", "봉황천합류후", "호탄수위표") #6개
-  name_subindex[[11]] <- c("무주남대천상류", "무주남대천중류", "무주남대천하류") #3개
-  name_subindex[[12]] <- c("주자천", "용담댐", "정자천", "구량천", "진안천", "장계천합류후", "장계천", "진안천합류후") #8개
-  name_subindex[[13]] <- c("용담댐하류") #1개
-  name_subindex[[14]] <- c("미호천합류전", "매포수위표") #2개
+  name_subindex[[3]] <- c("대청댐", "대청댐조정지", "소옥천상류", "소옥천하류", "대청댐상류") # 5개
+  name_subindex[[4]] <- c("항건천", "보청천중류", "삼가천합류후", "삼가천", "보청천상류", "보청천하류") # 6개
+  name_subindex[[5]] <- c("석천", "초강상류", "초강하류") # 3개
+  name_subindex[[6]] <- c("갑천하류", "유성수위표", "갑천상류", "대전천", "유등천상류", "유등천하류") # 6개
+  name_subindex[[7]] <- c("노성천", "논산천하류", "강경천", "논산천상류", "탑정댐") # 5개
+  name_subindex[[8]] <- c("보청천합류전") # 1개
+  name_subindex[[9]] <- c("입포수위표", "길산천", "금강하구언") # 3개
+  name_subindex[[10]] <- c("영동천", "봉황천하류", "초강합류후", "봉황천상류", "봉황천합류후", "호탄수위표") # 6개
+  name_subindex[[11]] <- c("무주남대천상류", "무주남대천중류", "무주남대천하류") # 3개
+  name_subindex[[12]] <- c("주자천", "용담댐", "정자천", "구량천", "진안천", "장계천합류후", "장계천", "진안천합류후") # 8개
+  name_subindex[[13]] <- c("용담댐하류") # 1개
+  name_subindex[[14]] <- c("미호천합류전", "매포수위표") # 2개
   region_subindex <- list()
   
   Geum_RCH_ID <- c()
   for(i in 1:length(region_index)){
     shape_sub <- subset(shape, sapply(as.character(shape@data$RCH_ID), function(x) substr(x, start=1, stop=4)==region_index[i]) )
-    #plot(shape_sub)
+    # plot(shape_sub)
     region_subindex[[i]] <-unique(sapply(as.character(shape_sub@data$RCH_ID), function(x) substr(x, start=1, stop=6)))
     for(j in 1:length(region_subindex[[i]])){
       shape_sub_sub <- subset(shape_sub, sapply(as.character(shape_sub@data$RCH_ID), function(x) substr(x, start=1, stop=6))==region_subindex[[i]][j])
-      #plot(shape_sub_sub, col="red", add=T)
+      # plot(shape_sub_sub, col="red", add=T)
       Geum_RCH_ID_Imsi <- cbind(shape_sub_sub@data, data.frame(중권역번호=region_index[i], 중권역이름=name_index[i], 소권역번호=region_subindex[[i]][j], 소권역이름=name_subindex[[i]][j]))
       Geum_RCH_ID <- rbind(Geum_RCH_ID, Geum_RCH_ID_Imsi)
     }
   }
   
   # when print subregion
-  #i=8
-  #shape_sub <- subset(shape, sapply(as.character(shape@data$RCH_ID), function(x) substr(x, start=1, stop=4)==region_index[i]) )
-  #plot(shape_sub)
-  #region_subindex[[i]] <-unique(sapply(as.character(shape_sub@data$RCH_ID), function(x) substr(x, start=1, stop=6)))
-  #region_subsubindex[[i]] <- list()
+  # i=8
+  # shape_sub <- subset(shape, sapply(as.character(shape@data$RCH_ID), function(x) substr(x, start=1, stop=4)==region_index[i]) )
+  # plot(shape_sub)
+  # region_subindex[[i]] <-unique(sapply(as.character(shape_sub@data$RCH_ID), function(x) substr(x, start=1, stop=6)))
+  # region_subsubindex[[i]] <- list()
   #
-  #j=1
-  #shape_sub_sub <- subset(shape_sub, sapply(as.character(shape_sub@data$RCH_ID), function(x) substr(x, start=1, stop=6))==region_subindex[[i]][j])
-  #plot(shape_sub_sub, col="red", add=T)
-  #region_subsubindex[[i]][[j]] <-unique(sapply(as.character(shape_sub@data$RCH_ID), function(x) substr(x, start=1, stop=8)))
+  # j=1
+  # shape_sub_sub <- subset(shape_sub, sapply(as.character(shape_sub@data$RCH_ID), function(x) substr(x, start=1, stop=6))==region_subindex[[i]][j])
+  # plot(shape_sub_sub, col="red", add=T)
+  # region_subsubindex[[i]][[j]] <-unique(sapply(as.character(shape_sub@data$RCH_ID), function(x) substr(x, start=1, stop=8)))
   #
-  #for(k in 1:length(region_subsubindex[[i]][[j]])){
-  #  shape_sub_sub_sub <- subset(shape_sub_sub, sapply(as.character(shape_sub@data$RCH_ID), function(x) substr(x, start=1, stop=8))==region_subsubindex[[i]][[j]][k])
-  #  plot(shape_sub_sub_sub, col=k, add=T)
-  #}
+  # for(k in 1:length(region_subsubindex[[i]][[j]])){
+  #   shape_sub_sub_sub <- subset(shape_sub_sub, sapply(as.character(shape_sub@data$RCH_ID), function(x) substr(x, start=1, stop=8))==region_subsubindex[[i]][[j]][k])
+  #   plot(shape_sub_sub_sub, col=k, add=T)
+  # }
   
   ########################################
   ##Adjacency matrix
   ########################################
-  #reference: https://cran.r-project.org/web/packages/riverdist/vignettes/riverdist_vignette.html
+  # reference: https://cran.r-project.org/web/packages/riverdist/vignettes/riverdist_vignette.html
   
-  #connections: Object of class "matrix", with "numeric" elements. Defined as a square matrix, with elements describing the type of connection detected between line segments.
-  #• A value of 1 in element [i,j] indicates that the beginning of segment i is connected to the beginning of segment j.
-  #• A value of 2 in element [i,j] indicates that the beginning of segment i is connected to the end of segment j.
-  #• A value of 3 in element [i,j] indicates that the end of segment i is connected to the beginning of segment j.
-  #• A value of 4 in element [i,j] indicates that the end of segment i is connected to the end of segment j.
-  #• A value of 5 in element [i,j] indicates that segments i and j are connected at both beginning and end.
-  #• A value of 6 in element [i,j] indicates that the beginning of segment i is connected to the end of segment j, and the end of segment i is connected to the beginning of segment j.
-  #• A value of NA in element [i,j] indicates that segments i and j are not connected.
+  # connections: Object of class "matrix", with "numeric" elements. Defined as a square matrix, with elements describing the type of connection detected between line segments.
+  # • A value of 1 in element [i,j] indicates that the beginning of segment i is connected to the beginning of segment j.
+  # • A value of 2 in element [i,j] indicates that the beginning of segment i is connected to the end of segment j.
+  # • A value of 3 in element [i,j] indicates that the end of segment i is connected to the beginning of segment j.
+  # • A value of 4 in element [i,j] indicates that the end of segment i is connected to the end of segment j.
+  # • A value of 5 in element [i,j] indicates that segments i and j are connected at both beginning and end.
+  # • A value of 6 in element [i,j] indicates that the beginning of segment i is connected to the end of segment j, and the end of segment i is connected to the beginning of segment j.
+  # • A value of NA in element [i,j] indicates that segments i and j are not connected.
   if(location=="Miho"){
     flow_network_original <- line2network(path = "/home/kyu9510/pca_on_river/Data/ProcessedData/", layer="GeumMiho", tolerance =  0.000001, reproject ="+proj=longlat +datum=WGS84", supplyprojection = NULL)
     flow_network <- line2network(path = "/home/kyu9510/pca_on_river/Data/ProcessedData/", layer="thinGeumMiho", tolerance =  0.000001, reproject ="+proj=longlat +datum=WGS84", supplyprojection = NULL)
-    #plot(flow_network)
+    # plot(flow_network)
   }else if(location=="Full"){
     flow_network_original <- line2network(path = "/home/kyu9510/pca_on_river/Data/ProcessedData/", layer="Geum", tolerance =  0.000001, reproject ="+proj=longlat +datum=WGS84", supplyprojection = NULL)
     flow_network <- line2network(path = "/home/kyu9510/pca_on_river/Data/ProcessedData/", layer="thinGeum", tolerance =  0.000001, reproject ="+proj=longlat +datum=WGS84", supplyprojection = NULL)
-    #plot(flow_network)
+    # plot(flow_network)
   }else{
     stop("Wrong location")
   }
@@ -1305,16 +1300,14 @@ importSSN_stream <- function(shreve_obj, location="Miho", multipleplaces=FALSE, 
   #showends(seg=80, rivers=flow_network)
   
   # added stream lengths by myself 
-  #reach_length <- shape@data$Shape_Leng[which(sapply(as.character(shape@data$RCH_ID), function(x) substr(x, start=1, stop=4)==rregion_subindex[[1]][i]) )]
+  # reach_length <- shape@data$Shape_Leng[which(sapply(as.character(shape@data$RCH_ID), function(x) substr(x, start=1, stop=4)==rregion_subindex[[1]][i]) )]
   
-
-  
-  #ind1 <- colnames(edges@data) == c("netID")
-  #ind2 <- colnames(edges@data) == c("rid")
-  #ind3 <- colnames(edges@data) == c("upDist")
-  #if (is.factor(edges@data$netID)) {
-  #  edges@data$netID <- as.character(edges@data$netID)
-  #}
+  # ind1 <- colnames(edges@data) == c("netID")
+  # ind2 <- colnames(edges@data) == c("rid")
+  # ind3 <- colnames(edges@data) == c("upDist")
+  # if (is.factor(edges@data$netID)) {
+  #   edges@data$netID <- as.character(edges@data$netID)
+  # }
   
   if(location=="Miho"){
 
@@ -1337,42 +1330,42 @@ importSSN_stream <- function(shreve_obj, location="Miho", multipleplaces=FALSE, 
     
     # which(data$eventplace$X=="미호천4" | data$eventplace$X=="유등천A" | data$eventplace$X=="삼가천" | data$eventplace$X=="석천")
     # included so that location index different to the written index 
-    #17: 추풍령천, 18: 초강1
+    # 17: 추풍령천, 18: 초강1
     data$eventplace$RCH_ID[17] <- as.integer(30050108)
-    #23: 옥천, 24: 우산 (옥천으로 평균)
-    #36: 대청댐, 38: 대청
+    # 23: 옥천, 24: 우산 (옥천으로 평균)
+    # 36: 대청댐, 38: 대청
     data$eventplace$RCH_ID[36] <- as.integer(30080409); data$eventplace$RCH_ID[38] <- as.integer(30080419)
-    #43: 갑천1, 44: 갑천2
+    # 43: 갑천1, 44: 갑천2
     data$eventplace$RCH_ID[44] <- as.integer(30090208)
-    #47: 침산교, 48: 유등천1
+    # 47: 침산교, 48: 유등천1
     data$eventplace$RCH_ID[47] <- as.integer(30090502)
-    #49: 옥계교, 50: 대전천1 (두개 평균을내어야 (대전천1로 평균))
-    #55: 갑천5, 56: 갑천5-1 (갑천5로 평균)
-    #58: 청원-1 59: 백천
+    # 49: 옥계교, 50: 대전천1 (두개 평균을내어야 (대전천1로 평균))
+    # 55: 갑천5, 56: 갑천5-1 (갑천5로 평균)
+    # 58: 청원-1 59: 백천
     data$eventplace$RCH_ID[58] <- as.integer(30100203)
-    #79: 미호천8, 83: 미호천5
+    # 79: 미호천8, 83: 미호천5
     data$eventplace$RCH_ID[79] <- as.integer(30111301)
-    #85: 조천, 86: 조천1
+    # 85: 조천, 86: 조천1
     data$eventplace$RCH_ID[86] <- as.integer(30111505)
-    #98: 곰나루, 99: 금강
+    # 98: 곰나루, 99: 금강
     data$eventplace$RCH_ID[98] <- as.integer(30120532)
     
     
-    #[1] 구량천       가막         진안천       정자천       용담         용포         무주남대천   무주남대천-1 무주남대천-2 부리        
-    #[11] 제원         봉황천       제원A        영동         영동천1      영동천2      추풍령천     초강1        금계천       초강2       
-    #[21] 이원         옥천         우산         보청천1      보청천2      항건천       보청천3      보청천4      상곡천       추풍천      
-    #[31] 옥천천       회인천       주원천       대청댐       품곡천       대청         용호천       현도         두계천1      봉곡2교     
-    #[41] 갑천1        갑천2        갑천3        침산교       유등천1      옥계교       대전천1      대전천2      대전천3      유등천5     
-    #[51] 갑천4        갑천5        갑천5-1      세종1        청원-1       백천         미호천1      칠장천       미호천1-1    한천        
-    #[61] 미호천2      백곡천1      백곡천2      미호천7      초평천       미호천3      보강천1      보강천       성암천       무심천      
-    #[71] 무심천1      무심천2      무심천3      석남천       미호천8      병천천A      용두천       병천천       미호천5      미호천5A    
-    #[81] 조천         조천1        월하천       미호천6-1    연기         금남         용수천-1     용수천       대교천       대교천2     
-    #[91] 세종2        공주1        정안천       곰나루       금강         유구천       목면         공주2        부여         지천        
-    #[101] 지천-1       정동         은산천       부여1        금천         부여2        석성천-1     석성천       석성천2      성동        
-    #[111] 논산천-1     논산천1      연산천       노성천-1     노성천       논산천2      방축천       논산천4      수철천       마산천      
-    #[121] 강경천       강경         산북천       양화-1       길산천       길산천2      금강갑문    
-    #}else{
-    #  
+    # [1] 구량천       가막         진안천       정자천       용담         용포         무주남대천   무주남대천-1 무주남대천-2 부리        
+    # [11] 제원         봉황천       제원A        영동         영동천1      영동천2      추풍령천     초강1        금계천       초강2       
+    # [21] 이원         옥천         우산         보청천1      보청천2      항건천       보청천3      보청천4      상곡천       추풍천      
+    # [31] 옥천천       회인천       주원천       대청댐       품곡천       대청         용호천       현도         두계천1      봉곡2교     
+    # [41] 갑천1        갑천2        갑천3        침산교       유등천1      옥계교       대전천1      대전천2      대전천3      유등천5     
+    # [51] 갑천4        갑천5        갑천5-1      세종1        청원-1       백천         미호천1      칠장천       미호천1-1    한천        
+    # [61] 미호천2      백곡천1      백곡천2      미호천7      초평천       미호천3      보강천1      보강천       성암천       무심천      
+    # [71] 무심천1      무심천2      무심천3      석남천       미호천8      병천천A      용두천       병천천       미호천5      미호천5A    
+    # [81] 조천         조천1        월하천       미호천6-1    연기         금남         용수천-1     용수천       대교천       대교천2     
+    # [91] 세종2        공주1        정안천       곰나루       금강         유구천       목면         공주2        부여         지천        
+    # [101] 지천-1       정동         은산천       부여1        금천         부여2        석성천-1     석성천       석성천2      성동        
+    # [111] 논산천-1     논산천1      연산천       노성천-1     노성천       논산천2      방축천       논산천4      수철천       마산천      
+    # [121] 강경천       강경         산북천       양화-1       길산천       길산천2      금강갑문    
+    # }else{
+    #   
     #}
     
   }
@@ -1383,21 +1376,21 @@ importSSN_stream <- function(shreve_obj, location="Miho", multipleplaces=FALSE, 
     
     kk <- match(data$eventplace$RCH_ID[jj], shape@data$RCH_ID) # fixme !!
 
-    #dist_upper <- apply(shape@data[,c(3,4)], 1, function(x) sqrt(sum((x-pts.coords)^2)) )
-    #dist_lower <- apply(shape@data[,c(5,6)], 1, function(x) sqrt(sum((x-pts.coords)^2)) )
+    # dist_upper <- apply(shape@data[,c(3,4)], 1, function(x) sqrt(sum((x-pts.coords)^2)) )
+    # dist_lower <- apply(shape@data[,c(5,6)], 1, function(x) sqrt(sum((x-pts.coords)^2)) )
     #
-    #kk <- sort(unique(union(which(dist_upper==min(c(dist_upper, dist_lower))), which(dist_lower==min(c(dist_upper, dist_lower))))))
+    # kk <- sort(unique(union(which(dist_upper==min(c(dist_upper, dist_lower))), which(dist_lower==min(c(dist_upper, dist_lower))))))
     #
-    #dist.imsiimsi <- c()
-    #for(pp in 1:length(kk)){
-    #  for(ll in 1:nrow(flow_network_original$lines[[kk[pp]]])){
-    #    dist.compute <- sqrt(sum((flow_network_original$lines[[kk[pp]]][ll,]-pts.coords)^2))
-    #    dist.imsiimsivec <- matrix(c(dist.compute, kk[pp], ll), nrow=1)
-    #    dist.imsiimsi <- rbind(dist.imsiimsi,dist.imsiimsivec)
-    #  }
-    #}
-    #dist.imsiimsi <- dist.imsiimsi[which.min(dist.imsiimsi[,1]),]
-    #dist.imsi <- rbind(dist.imsi, dist.imsiimsi)
+    # dist.imsiimsi <- c()
+    # for(pp in 1:length(kk)){
+    #   for(ll in 1:nrow(flow_network_original$lines[[kk[pp]]])){
+    #     dist.compute <- sqrt(sum((flow_network_original$lines[[kk[pp]]][ll,]-pts.coords)^2))
+    #     dist.imsiimsivec <- matrix(c(dist.compute, kk[pp], ll), nrow=1)
+    #     dist.imsiimsi <- rbind(dist.imsiimsi,dist.imsiimsivec)
+    #   }
+    # }
+    # dist.imsiimsi <- dist.imsiimsi[which.min(dist.imsiimsi[,1]),]
+    # dist.imsi <- rbind(dist.imsi, dist.imsiimsi)
     
     dist.imsiimsi <- c()
     for(ll in 1:nrow(flow_network_original$lines[[kk]])){
@@ -1443,8 +1436,8 @@ importSSN_stream <- function(shreve_obj, location="Miho", multipleplaces=FALSE, 
   if(location=="Miho"){
     miho <- which(data$eventplace$X=="미호천4")
   }else if(location=="Full"){
-    #삼가천, 석천: no obs.points
-    #유등천A, 미호천4: data$eventplace$X exist but colnames(data$normaldata_TN) not
+    # 삼가천, 석천: no obs.points
+    # 유등천A, 미호천4: data$eventplace$X exist but colnames(data$normaldata_TN) not
     miho <- which(data$eventplace$X=="미호천4" | data$eventplace$X=="유등천A" | data$eventplace$X=="삼가천" | data$eventplace$X=="석천")
     if(multipleplaces==FALSE){
       miho <- sort(c(miho, which(data$eventplace$X=="무주남대천" | data$eventplace$X=="무주남대천-1" | data$eventplace$X=="우산" | data$eventplace$X=="옥계교" | data$eventplace$X=="갑천5-1")))
@@ -1486,7 +1479,7 @@ importSSN_stream <- function(shreve_obj, location="Miho", multipleplaces=FALSE, 
                          775, 554, 190, 560, 555, 551, 252, 646, 296, 575,
                          576, 645, 270, 628, 883, 883, 614)
     }
-    ##(738, 737) -> (737, 751)
+    ## (738, 737) -> (737, 751)
     dist.imsi <- c()
     lll <- 0
     for(jj in 1:nrow(data$eventplace)){
@@ -1497,24 +1490,24 @@ importSSN_stream <- function(shreve_obj, location="Miho", multipleplaces=FALSE, 
         lll <-lll - 1
       }
       kk <- RCH_ID_manual[lll]
-      #kk <- match(RCH_ID_manual[lll], shape@data$RCH_ID) # to be fixed
-      #kk <- match(data$eventplace$RCH_ID[jj], shape@data$RCH_ID) # to be fixed
+      # kk <- match(RCH_ID_manual[lll], shape@data$RCH_ID) # to be fixed
+      # kk <- match(data$eventplace$RCH_ID[jj], shape@data$RCH_ID) # to be fixed
   
-      #dist_upper <- apply(shape@data[,c(3,4)], 1, function(x) sqrt(sum((x-pts.coords)^2)) )
-      #dist_lower <- apply(shape@data[,c(5,6)], 1, function(x) sqrt(sum((x-pts.coords)^2)) )
+      # dist_upper <- apply(shape@data[,c(3,4)], 1, function(x) sqrt(sum((x-pts.coords)^2)) )
+      # dist_lower <- apply(shape@data[,c(5,6)], 1, function(x) sqrt(sum((x-pts.coords)^2)) )
       #
-      #kk <- sort(unique(union(which(dist_upper==min(c(dist_upper, dist_lower))), which(dist_lower==min(c(dist_upper, dist_lower))))))
+      # kk <- sort(unique(union(which(dist_upper==min(c(dist_upper, dist_lower))), which(dist_lower==min(c(dist_upper, dist_lower))))))
       #
-      #dist.imsiimsi <- c()
-      #for(pp in 1:length(kk)){
-      #  for(ll in 1:nrow(flow_network_original$lines[[kk[pp]]])){
-      #    dist.compute <- sqrt(sum((flow_network_original$lines[[kk[pp]]][ll,]-pts.coords)^2))
-      #    dist.imsiimsivec <- matrix(c(dist.compute, kk[pp], ll), nrow=1)
-      #    dist.imsiimsi <- rbind(dist.imsiimsi,dist.imsiimsivec)
-      #  }
-      #}
-      #dist.imsiimsi <- dist.imsiimsi[which.min(dist.imsiimsi[,1]),]
-      #dist.imsi <- rbind(dist.imsi, dist.imsiimsi)
+      # dist.imsiimsi <- c()
+      # for(pp in 1:length(kk)){
+      #   for(ll in 1:nrow(flow_network_original$lines[[kk[pp]]])){
+      #     dist.compute <- sqrt(sum((flow_network_original$lines[[kk[pp]]][ll,]-pts.coords)^2))
+      #     dist.imsiimsivec <- matrix(c(dist.compute, kk[pp], ll), nrow=1)
+      #     dist.imsiimsi <- rbind(dist.imsiimsi,dist.imsiimsivec)
+      #   }
+      # }
+      # dist.imsiimsi <- dist.imsiimsi[which.min(dist.imsiimsi[,1]),]
+      # dist.imsi <- rbind(dist.imsi, dist.imsiimsi)
       
       dist.imsiimsi <- c()
       for(ll in 1:nrow(flow_network_original$lines[[kk]])){
@@ -1542,7 +1535,7 @@ importSSN_stream <- function(shreve_obj, location="Miho", multipleplaces=FALSE, 
       DistanceUpstream_obs[ii] <- upstream(startseg = 614, endseg = dist.imsi[ii,2], startvert = 8, endvert = dist.imsi[ii,3], rivers=flow_network_original, net=TRUE)
     }
     
-    #data$eventplace$RCH_ID <- shape@data$RCH_ID[RCH_ID_manual]
+    # data$eventplace$RCH_ID <- shape@data$RCH_ID[RCH_ID_manual]
     pointdata <- cbind(data$eventplace[-miho,], rid_old=dist.imsi[-miho,2], upDist=DistanceUpstream_obs[-miho], locID=c(1:(nrow(data$eventplace)-length(miho))), netID=rep(1,(nrow(data$eventplace)-length(miho))), pid=setdiff(c(1:nrow(data$eventplace)), miho), shreve=shreve_obj[dist.imsi[-miho,2]], mindist=dist.imsi[-miho,1], rid=RCH_ID_manual, segid=dist.imsi[-miho,3])
   }else{
     pointdata <- cbind(data$eventplace[-miho,], rid_old=dist.imsi[-miho,2], upDist=DistanceUpstream_obs[-miho], locID=c(1:(nrow(data$eventplace)-length(miho))), netID=rep(1,(nrow(data$eventplace)-length(miho))), pid=setdiff(c(1:nrow(data$eventplace)), miho), shreve=shreve_obj[dist.imsi[-miho,2]], mindist=dist.imsi[-miho,1], rid=dist.imsi[-miho,2], segid=dist.imsi[-miho,3])
@@ -1551,62 +1544,62 @@ importSSN_stream <- function(shreve_obj, location="Miho", multipleplaces=FALSE, 
   network.SSNPoints <- list()
   network.SSNPoints[[1]] <- new("SSNPoint", network.point.coords = network.line.coords.obsdata, point.coords = pointcoords, point.data=pointdata, points.bbox=pointbbox, proj4string=shape@proj4string)
   obspoints <- new("SSNPoints", SSNPoints=network.SSNPoints, ID="Obs")
-  #(3)predpoint
+  # (3)predpoint
   network.line.coords.preddata <- data.frame(NetworkID=rep(1,length(miho)), SegmentID=dist.imsi[miho,2], DistanceUpstream=DistanceUpstream_obs[miho])
   rownames(network.line.coords.preddata) <- rownames(dist.imsi)[miho]
   pointcoords.preddata <- cbind(data$eventplace$경도.Degree.[miho], data$eventplace$위도.Degree.[miho]); colnames(pointcoords.preddata) <- c("coords.x1", "coords.x2")
-  #pointdata에 ratio 추가해야
+  # pointdata에 ratio 추가해야
   pointdata.preddata <- cbind(data$eventplace[miho,], rid_old=dist.imsi[miho,2], upDist=DistanceUpstream_obs[miho], locID=c(1:length(miho)), netID=rep(1,length(miho)), pid=miho, shreve=shreve_obj[dist.imsi[miho,2]], mindist=dist.imsi[miho,1], rid=dist.imsi[miho,2], segid=dist.imsi[miho,3])
   pointbbox.preddata <- rbind(range(pointcoords[miho,1]), range(pointcoords[miho,2])); colnames(pointbbox.preddata) <- c("min", "max"); rownames(pointbbox.preddata) <- c("coords.x1", "coords.x2")
   network.SSNPoints.preddata <- list()
   network.SSNPoints.preddata[[1]] <- new("SSNPoint", network.point.coords = network.line.coords.preddata, point.coords = pointcoords.preddata, point.data=pointdata.preddata, points.bbox=pointbbox.preddata, proj4string=shape@proj4string)
   if(length(miho)==0){
-    #(3-1) no predpt case
+    # (3-1) no predpt case
     predpoints <- new("SSNPoints", SSNPoints=list(), ID=character(0))
   }else{
     predpoints <- new("SSNPoints", SSNPoints=network.SSNPoints.preddata, ID="Preds")
   }
-  #(4)SSNpath: path
+  # (4)SSNpath: path
   SSNpath <- "NULL"
-  #(5)data: data.frame type ( rid,upDist,    Length, netID)
-  #data:Object of class "data.frame". 
-  #The number of rows in data should equal the number of lines in the lines object. Row names correspond to SegmentID values
+  # (5)data: data.frame type ( rid,upDist,    Length, netID)
+  # data:Object of class "data.frame". 
+  # The number of rows in data should equal the number of lines in the lines object. Row names correspond to SegmentID values
   shapedata <- shape@data
   shapedata <- cbind(shapedata, rid=c(1:nrow(shape@data)), upDist=DistanceUpstream_seg, Length=shape@data$Shape_Leng, netID=rep(1,nrow(shape@data)), shreve=shreve_obj )
-  #(6)lines: segment polygon
+  # (6)lines: segment polygon
   shapelines <- shape@lines
-  #(7)bbox
+  # (7)bbox
   shapebbox <- shape@bbox; colnames(shapebbox) = c("min", "max"); rownames(shapebbox) <- c("x", "y")
-  #(8)roj4string
+  # (8)roj4string
   shapeproj4string <- shape@proj4string
   
   Geum_original <- new("SpatialStreamNetwork", network.line.coords=network.line.coords, obspoints=obspoints, predpoints=predpoints, path=SSNpath, data=shapedata, lines=shapelines, bbox=shapebbox, proj4string=shapeproj4string)
   
-  #Object of class "SSNPoints" with 2 slots
+  # Object of class "SSNPoints" with 2 slots
   #
-  #@ SSNPoints: List of SSNPoint objects with 5 slots
-  #@ network.point.coords: object of class "data.frame". Row names
-  #represent point identifiers (pid) stored in the point.data
-  #data.frame.
-  #$ NetworkID: factor identifying the NetworkID of that point
-  #$ SegmentID: factor identifying the unique stream segment of that point
-  #$ DistanceUpstream: numeric value representing the cumulative
-  #distance from the network outlet, the most downstream point
-  #on a network, to that point
-  #@ point.coords: numeric matrix or "data.frame" with x- and y-
-  #  coordinates (each row is a point); row names represent point
-  #identifiers (pid) stored in the point.data data.frame.
-  #@ point.data: object of class "data.frame"; the number of rows in
-  #data should equal the number of points in the
-  #network.point.coords object; row names are set to the pid
-  #attribute.
-  #@ points.bbox: Object of class "matrix"; see Spatial-class
-  #@ proj4string: Object of class "CRS"; see CRS-class
-  #@ ID: character string representing the name of the observation points
+  # @ SSNPoints: List of SSNPoint objects with 5 slots
+  # @ network.point.coords: object of class "data.frame". Row names
+  # represent point identifiers (pid) stored in the point.data
+  # data.frame.
+  # $ NetworkID: factor identifying the NetworkID of that point
+  # $ SegmentID: factor identifying the unique stream segment of that point
+  # $ DistanceUpstream: numeric value representing the cumulative
+  # distance from the network outlet, the most downstream point
+  # on a network, to that point
+  # @ point.coords: numeric matrix or "data.frame" with x- and y-
+  #   coordinates (each row is a point); row names represent point
+  # identifiers (pid) stored in the point.data data.frame.
+  # @ point.data: object of class "data.frame"; the number of rows in
+  # data should equal the number of points in the
+  # network.point.coords object; row names are set to the pid
+  # attribute.
+  # @ points.bbox: Object of class "matrix"; see Spatial-class
+  # @ proj4string: Object of class "CRS"; see CRS-class
+  # @ ID: character string representing the name of the observation points
   
   
-  #network.line <- shape_tinned@lines
-  #bbox, proj4string
+  # network.line <- shape_tinned@lines
+  # bbox, proj4string
   
   return(Geum_original)
 }
@@ -1653,7 +1646,7 @@ get_binaryIDs_stream <- function(mouth_node, shape, RCH_ID=NULL){
   }
   
   
-  #result_binaryIDs <- data.frame(rid=c(1:length(shape$RCH_ID)), binaryID=rep("", length(shape$RCH_ID)))
+  # result_binaryIDs <- data.frame(rid=c(1:length(shape$RCH_ID)), binaryID=rep("", length(shape$RCH_ID)))
   result_binaryIDs <- data.frame(rid=c(1:length(RCH_ID)), binaryID=rep("", length(RCH_ID)))
   result_binaryIDs$binaryID <- as.character(result_binaryIDs$binaryID)
   idx <- 1
@@ -1687,7 +1680,7 @@ get_binaryIDs_stream <- function(mouth_node, shape, RCH_ID=NULL){
         key_ind <- edgelist[key_RID_ind[1],2]
       }
     }
-    #print(key_RID_ind)
+    # print(key_RID_ind)
   }
   return(result_binaryIDs)
 }
@@ -1710,7 +1703,7 @@ re_map_rid <- function(rid_vector, all_rid){
 get_adjacency_stream <- function (binaryIDs_obj, netID = 1) 
 {
   binaryIDs <- binaryIDs_obj
-  #binaryIDs <- get_binaryIDs(ssn_directory, net = netID)
+  # binaryIDs <- get_binaryIDs(ssn_directory, net = netID)
   bid <- binaryIDs[, 2]
   rid <- binaryIDs[, 1]
   nch <- nchar(bid)
@@ -1761,9 +1754,9 @@ get_adjacency_stream <- function (binaryIDs_obj, netID = 1)
                         ncol = n.segments), rid_bid = cbind(rid, bid))
 }
 
-#compute shreve stream order
+# compute shreve stream order
 compute_shreve <- function(adjacency){
-  #adjacency: adjacency object obtained from get_adjacency_stream
+  # adjacency: adjacency object obtained from get_adjacency_stream
   adj_mat <- as.matrix(adjacency$adjacency)
   
   shreve <- rep(0, nrow(adj_mat))
@@ -1775,13 +1768,13 @@ compute_shreve <- function(adjacency){
   pointsin <- setdiff(pointsin, first_stream)
   
   while(length(pointsin)!=0){
-    #find next stream
-    #case 1: Y자
+    # find next stream
+    # case 1: Y자
     next_stream1 <- pointsin[which(sapply(pointsin, function(x) sum(adj_mat[first_stream,x])==2 ))]
     for(i in 1:length(next_stream1)){
       shreve[next_stream1[i]] <- sum(shreve[which(adj_mat[,next_stream1[i]]!=0)])
     }
-    #case 2: 1자
+    # case 2: 1자
     next_stream2 <- pointsin[which(sapply(pointsin, function(x) sum(adj_mat[first_stream,x])==1 ) & sapply(pointsin, function(x) sum(adj_mat[,x])==1 ))]
     for(j in 1:length(next_stream2)){
       shreve[next_stream2[j]] <- sum(shreve[which(adj_mat[,next_stream2[j]]!=0)])
@@ -1789,20 +1782,20 @@ compute_shreve <- function(adjacency){
     next_stream <- c(next_stream1, next_stream2)
     pointsin <- setdiff(pointsin, next_stream)
     first_stream <- c(first_stream, next_stream)
-    #print(pointsin)
+    # print(pointsin)
   }
   
   return(shreve)
 }
 
 
-#compute shreve stream order
+# compute shreve stream order
 compute_shreve_and_dist <- function(adjacency, example_network, type="equal", scalevec=c(0.2, 1.5), logdata=FALSE){
-  #type="lengthprop": shreve_and_dist[first_stream] is defined by proportional to their lengths
-  #type="equal": shreve_and_dist[first_stream] is defined by equal weight (== shreve dist style)
-  #scalevec: final weight를 scaling (default = (0.2,1.5), (refer to O'Donnell's method))
+  # type="lengthprop": shreve_and_dist[first_stream] is defined by proportional to their lengths
+  # type="equal": shreve_and_dist[first_stream] is defined by equal weight (== shreve dist style)
+  # scalevec: final weight를 scaling (default = (0.2,1.5), (refer to O'Donnell's method))
   
-  #adjacency: adjacency object obtained from get_adjacency_stream
+  # adjacency: adjacency object obtained from get_adjacency_stream
   adj_mat <- as.matrix(adjacency$adjacency)
   
   shreve <- rep(0, nrow(adj_mat))
@@ -1822,14 +1815,14 @@ compute_shreve_and_dist <- function(adjacency, example_network, type="equal", sc
   pointsin <- setdiff(pointsin, first_stream)
   
   while(length(pointsin)!=0){
-    #find next stream
-    #case 1: Y shape
+    # find next stream
+    # case 1: Y shape
     next_stream1 <- pointsin[which(sapply(pointsin, function(x) sum(adj_mat[first_stream,x])==2 ))]
     for(i in 1:length(next_stream1)){
       shreve[next_stream1[i]] <- sum(shreve[which(adj_mat[,next_stream1[i]]!=0)])
       shreve_and_dist[next_stream1[i]] <- sum(shreve_and_dist[which(adj_mat[,next_stream1[i]]!=0)]) + example_network@data$Length[next_stream1[i]]
     }
-    #case 2: 1 shape
+    # case 2: 1 shape
     next_stream2 <- pointsin[which(sapply(pointsin, function(x) sum(adj_mat[first_stream,x])==1 ) & sapply(pointsin, function(x) sum(adj_mat[,x])==1 ))]
     for(j in 1:length(next_stream2)){
       shreve[next_stream2[j]] <- sum(shreve[which(adj_mat[,next_stream2[j]]!=0)])
@@ -1838,14 +1831,14 @@ compute_shreve_and_dist <- function(adjacency, example_network, type="equal", sc
     next_stream <- c(next_stream1, next_stream2)
     pointsin <- setdiff(pointsin, next_stream)
     first_stream <- c(first_stream, next_stream)
-    #print(pointsin)
+    # print(pointsin)
   }
   
-  #scaling
-  #weight_vec_candidate2 <- scales::rescale(log(weight_vec_candidate2$distweight), to=c(0.2, 1.5))
+  # scaling
+  # weight_vec_candidate2 <- scales::rescale(log(weight_vec_candidate2$distweight), to=c(0.2, 1.5))
   if(logdata==TRUE){
     shreve_and_dist <- scales::rescale(log(sqrt(shreve_and_dist)), to=c(scalevec[1], scalevec[2]))
-    #shreve_and_dist <- scales::rescale(log(shreve_and_dist), to=c(scalevec[1], scalevec[2]))
+    # shreve_and_dist <- scales::rescale(log(shreve_and_dist), to=c(scalevec[1], scalevec[2]))
   }else{
     shreve_and_dist <- scales::rescale((sqrt(shreve_and_dist)), to=c(scalevec[1], scalevec[2]))
   }
@@ -1857,7 +1850,7 @@ compute_shreve_weighted <- function(adjacency, weight){
   # compute_shreve_and_dist takes length of example_network as an input
   # instead, take weight object as an input
   # extend to weighted version
-  #adjacency: adjacency object obtained from get_adjacency_stream
+  # adjacency: adjacency object obtained from get_adjacency_stream
   adj_mat <- as.matrix(adjacency$adjacency)
   
   shreve <- rep(0, nrow(adj_mat))
@@ -1871,14 +1864,14 @@ compute_shreve_weighted <- function(adjacency, weight){
   pointsin <- setdiff(pointsin, first_stream)
   
   while(length(pointsin)!=0){
-    #find next stream
-    #case 1: Y shape
+    # find next stream
+    # case 1: Y shape
     next_stream1 <- pointsin[which(sapply(pointsin, function(x) sum(adj_mat[first_stream,x])==2 ))]
     for(i in 1:length(next_stream1)){
       shreve[next_stream1[i]] <- sum(shreve[which(adj_mat[,next_stream1[i]]!=0)])
       shreve_and_dist[next_stream1[i]] <- sum(shreve_and_dist[which(adj_mat[,next_stream1[i]]!=0)]) + weight[next_stream1[i]]
     }
-    #case 2: 1 shape
+    # case 2: 1 shape
     next_stream2 <- pointsin[which(sapply(pointsin, function(x) sum(adj_mat[first_stream,x])==1 ) & sapply(pointsin, function(x) sum(adj_mat[,x])==1 ))]
     for(j in 1:length(next_stream2)){
       shreve[next_stream2[j]] <- sum(shreve[which(adj_mat[,next_stream2[j]]!=0)])
@@ -1887,16 +1880,16 @@ compute_shreve_weighted <- function(adjacency, weight){
     next_stream <- c(next_stream1, next_stream2)
     pointsin <- setdiff(pointsin, next_stream)
     first_stream <- c(first_stream, next_stream)
-    #print(pointsin)
+    # print(pointsin)
   }
   
   return(list(shreve=shreve, distweight=shreve_and_dist))
 }
 
 
-########################################
-##Graphics
-########################################
+# ====================================
+# Graphics
+# ====================================
 
 source("/home/kyu9510/pca_on_river/Code/iwanthue.R", chdir = TRUE)
 
@@ -1906,7 +1899,7 @@ plot.SpatialStreamNetwork.SC <-
             add = FALSE, addWithLegend = FALSE, lwdLineCol = NULL, lwdLineEx = 1, 
             lineCol = "black", I_lines=NULL, pointsin=NULL, ...) 
   {
-    #my addition
+    # my addition
     if(is.null(pointsin)){
       pointsin <- c(1:length(I_lines))
     }
@@ -1961,7 +1954,7 @@ plot.SpatialStreamNetwork.SC <-
       }
       par(par.orig)
     }else if (is.null(VariableName)) {
-      #variable name = null case
+      # variable name = null case
       plot(x@bbox[1, ], x@bbox[2, ], type = "n", ...)
       for (i in 1:length(x@lines)) for (j in 1:length(x@lines[[i]])) if (is.null(lwdLineCol)) 
         lines((x@lines[[i]]@Lines[[j]]@coords), col = lineCol, 
@@ -1976,16 +1969,16 @@ plot.SpatialStreamNetwork.SC <-
       layout(matrix(1:2, nrow = 1), widths = c(4, 1))
       par(mar = c(5, 5, 3, 0))
       plot(x@bbox[1, ], x@bbox[2, ], type = "n", ...)
-      #for (i in 1:length(x@lines)) for (j in 1:length(x@lines[[i]])) if (is.null(lwdLineCol)) 
-      #  lines((x@lines[[i]]@Lines[[j]]@coords), col = lineCol,  ...)
-      #else lines(x@lines[[i]]@Lines[[j]]@coords, lwd = lwdLineEx * 
-      #             x@data[i, lwdLineCol], col = lineCol, ...)
+      # for (i in 1:length(x@lines)) for (j in 1:length(x@lines[[i]])) if (is.null(lwdLineCol)) 
+      #   lines((x@lines[[i]]@Lines[[j]]@coords), col = lineCol,  ...)
+      # else lines(x@lines[[i]]@Lines[[j]]@coords, lwd = lwdLineEx * 
+      #              x@data[i, lwdLineCol], col = lineCol, ...)
       
-      #define color palette
-      #color.palette = grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)]
-      #set.seed(1)
-      #col.stream <- sample(color.palette, length(I_lines))
-      #pie(rep(1,length(I_lines)), col=col.stream)
+      # define color palette
+      # color.palette = grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)]
+      # set.seed(1)
+      # col.stream <- sample(color.palette, length(I_lines))
+      # pie(rep(1,length(I_lines)), col=col.stream)
       col.stream <- iwanthue(n=length(I_lines), hmin=0, hmax=360, cmin=30, cmax=80, lmin=35, lmax=80, plot=FALSE, random=1) 
       
       for (i in 1:length(pointsin)){
@@ -2063,9 +2056,9 @@ plot.SpatialStreamNetwork.SC <-
 
 
 
-########################################
-##CODES not directly related to the SSN and smnet package
-########################################
+# =======================================================
+# CODES not directly related to the SSN and smnet package
+# =======================================================
 
 find_orthogonal <- function(x,y){
   # x: vector to be projected
@@ -2087,7 +2080,7 @@ forward_line <- function(line_remove, line_nbrs, lengths_remove, lengths_nbrs, a
     coarse_lengths <- lengths_nbrs + lengths_remove
     detail_lengths <- lengths_remove - coarse_lengths
     
-    #adjacency matrix change
+    # adjacency matrix change
     adj_matrix_imsi <- adj_matrix
     
     if(type=="b1"){
@@ -2102,8 +2095,8 @@ forward_line <- function(line_remove, line_nbrs, lengths_remove, lengths_nbrs, a
   }else if(type=="a2" | type=="b2"){
     # case b2
     # upstream: line_nbrs, downstream: line_remove
-    #test_a <- rbind(line_nbrs[1,], line_remove[2,])
-    #test_b <- coeff_lines[[remove]][1,]
+    # test_a <- rbind(line_nbrs[1,], line_remove[2,])
+    # test_b <- coeff_lines[[remove]][1,]
     
     newpt <- (line_nbrs[1,] + find_orthogonal(x=(line_remove[2,] - line_nbrs[1,]) , y= (line_nbrs[2,] - line_nbrs[1,]) ) )
     
@@ -2114,7 +2107,7 @@ forward_line <- function(line_remove, line_nbrs, lengths_remove, lengths_nbrs, a
     detail_lengths <- lengths_remove - coarse_lengths
     
     
-    #adjacency matrix change
+    # adjacency matrix change
     adj_matrix_imsi <- adj_matrix
     
     if(type=="b2"){
@@ -2136,10 +2129,10 @@ forward_line_Y <- function(line_remove, line_coremove, line_nbrs, lengths_remove
   # constructed for the Y shape
   
   
-  #plot(rbind(line_remove, line_coremove, line_nbrs), ylim=c(36.57288-(0.04621/2), 36.60227+(0.04621/2)))
-  #segments(x0=line_remove[1,1], y0=line_remove[1,2], x1=line_remove[2,1], y1=line_remove[2,2], col="red")
-  #segments(x0=line_coremove[1,1], y0=line_coremove[1,2], x1=line_coremove[2,1], y1=line_coremove[2,2], col="green")
-  #segments(x0=line_nbrs[1,1], y0=line_nbrs[1,2], x1=line_nbrs[2,1], y1=line_nbrs[2,2], col="blue")
+  # plot(rbind(line_remove, line_coremove, line_nbrs), ylim=c(36.57288-(0.04621/2), 36.60227+(0.04621/2)))
+  # segments(x0=line_remove[1,1], y0=line_remove[1,2], x1=line_remove[2,1], y1=line_remove[2,2], col="red")
+  # segments(x0=line_coremove[1,1], y0=line_coremove[1,2], x1=line_coremove[2,1], y1=line_coremove[2,2], col="green")
+  # segments(x0=line_nbrs[1,1], y0=line_nbrs[1,2], x1=line_nbrs[2,1], y1=line_nbrs[2,2], col="blue")
   
   # 1st removal
   newpt_imsi <- -(-(line_remove[1,]-line_remove[2,])-(line_coremove[1,]-line_coremove[2,]))+line_remove[2,]
@@ -2147,44 +2140,44 @@ forward_line_Y <- function(line_remove, line_coremove, line_nbrs, lengths_remove
   result_line_remove <- -line_remove
   result_line_coremove <- rbind(newpt_imsi, line_coremove[2,])
   
-  #adjacency matrix update
+  # adjacency matrix update
   adj_matrix[remove, ] <- -abs(adj_matrix[remove,])
   adj_matrix[,remove] <- -abs(adj_matrix[,remove])
   
-  #update length
+  # update length
   lengths_remove <- lengths_remove - lengths_coremove
   lengths_coremove <- lengths_remove + lengths_coremove
   
-  #2nd removal
+  # 2nd removal
   result_new <- forward_line(line_remove=result_line_coremove, line_nbrs=line_nbrs, lengths_remove=lengths_coremove, lengths_nbrs=lengths_nbrs, adj_matrix, remove=coremove, nbrs=nbrs, type="b1")
   
   type <- c("c1")
   
-  #points(newpt_imsi[1], newpt_imsi[2], col=5)
+  # points(newpt_imsi[1], newpt_imsi[2], col=5)
   
-  #test_a <- rbind(coeff_lines[[nbrs]][1,], coeff_lines[[remove]][2,])
-  #test_b <- coeff_lines[[remove]][1,]
-  #project(test_b , (test_a[2,] -test_a[1,]))
+  # test_a <- rbind(coeff_lines[[nbrs]][1,], coeff_lines[[remove]][2,])
+  # test_b <- coeff_lines[[remove]][1,]
+  # project(test_b , (test_a[2,] -test_a[1,]))
   #
-  #coeff_lines[[nbrs]][1,] + find_orthogonal(x=(test_a[2,] -test_a[1,]) , y= (coeff_lines[[nbrs]][2,]-coeff_lines[[nbrs]][1,]) )
+  # coeff_lines[[nbrs]][1,] + find_orthogonal(x=(test_a[2,] -test_a[1,]) , y= (coeff_lines[[nbrs]][2,]-coeff_lines[[nbrs]][1,]) )
   
-  #plot(rbind(test_a,test_b), ylim=c(36.581, 36.609), xlim=c(127.292, 127.310))
-  #segments(x0=test_a[1,1], y0=test_a[1,2], x1=test_a[2,1], y1=test_a[2,2])
-  #segments(x0=coeff_lines[[nbrs]][1,1], y0=coeff_lines[[nbrs]][1,2], x1=coeff_lines[[nbrs]][2,1], y1=coeff_lines[[nbrs]][2,2], col="blue")
-  #segments(x0=coeff_lines[[remove]][1,1], y0=coeff_lines[[remove]][1,2], x1=coeff_lines[[remove]][2,1], y1=coeff_lines[[remove]][2,2], col="red")
+  # plot(rbind(test_a,test_b), ylim=c(36.581, 36.609), xlim=c(127.292, 127.310))
+  # segments(x0=test_a[1,1], y0=test_a[1,2], x1=test_a[2,1], y1=test_a[2,2])
+  # segments(x0=coeff_lines[[nbrs]][1,1], y0=coeff_lines[[nbrs]][1,2], x1=coeff_lines[[nbrs]][2,1], y1=coeff_lines[[nbrs]][2,2], col="blue")
+  # segments(x0=coeff_lines[[remove]][1,1], y0=coeff_lines[[remove]][1,2], x1=coeff_lines[[remove]][2,1], y1=coeff_lines[[remove]][2,2], col="red")
   #
-  #points(127.30154,  36.58159, col="green", pch=16)
-  #points(127.3016, 36.60801, col="green", pch=16)
+  # points(127.30154,  36.58159, col="green", pch=16)
+  # points(127.3016, 36.60801, col="green", pch=16)
   
   
   return(list(coarse_line=result_new$coarse_line, detail_line=result_new$detail_line, coarse_lengths=result_new$coarse_lengths, detail_lengths=result_new$detail_lengths, adj_matrix=result_new$adj_matrix, type=type))
 }
 
 
-########################################
-##CODES related to graphics
-########################################
-#reference: https://stackoverflow.com/questions/20127282/r-color-scatterplot-points-by-z-value-with-legend
+# ===========================
+# CODES related to graphics
+# ===========================
+# reference: https://stackoverflow.com/questions/20127282/r-color-scatterplot-points-by-z-value-with-legend
 scatter_fill <- function (x, y, z,xlim=c(min(x),max(x)),ylim=c(min(y),max(y)),zlim=c(min(z),max(z)),
                           nlevels = 121, plot.title, plot.axes, 
                           key.title, key.axes, asp = NA, xaxs = "i", 
@@ -2195,23 +2188,23 @@ scatter_fill <- function (x, y, z,xlim=c(min(x),max(x)),ylim=c(min(y),max(y)),zl
   bigpar <- old.par$plt
   
   mar.orig <- (par.orig <- par(c("mar", "las", "mfrow")))$mar
-  #on.exit(par(par.orig))
-  #w <- (3 + mar.orig[2L]) * par("csi") * 2.54
+  # on.exit(par(par.orig))
+  # w <- (3 + mar.orig[2L]) * par("csi") * 2.54
   w <- (3 + mar.orig[2L]) * par("csi") * 2.24
-  #layout(matrix(c(2, 1), ncol = 2L), widths = c(1, lcm(w)))
+  # layout(matrix(c(2, 1), ncol = 2L), widths = c(1, lcm(w)))
   
-  #zlim=c(min(z, na.rm=T), max(z, na.rm=T))
+  # zlim=c(min(z, na.rm=T), max(z, na.rm=T))
   # choose colors to interpolate
   levels <- seq(zlim[1],zlim[2],length.out = nlevels)
-  #col <- colorRampPalette(c("red","yellow","dark green"))(nlevels) 
-  #following ODonnell's Approach
+  # col <- colorRampPalette(c("red","yellow","dark green"))(nlevels) 
+  # following ODonnell's Approach
   col<-coldefault(nlevels)
   colz <- col[cut(z,nlevels)]  
   
   par(bigpar)
   mar <- mar.orig
-  #mar[4L] <- 1
-  #mar[4L] <- 0.1
+  # mar[4L] <- 1
+  # mar[4L] <- 0.1
   par(mar = mar)
   
   par(las = 0)
@@ -2229,7 +2222,7 @@ scatter_fill <- function (x, y, z,xlim=c(min(x),max(x)),ylim=c(min(y),max(y)),zl
     }else if (axes & y.axes==FALSE & y.axes.label==TRUE) {
       title(main = "", xlab = "", ylab = "")
       Axis(x, side = 1)
-      #Axis(y, side = 2)
+      # Axis(y, side = 2)
     }else if(axes & y.axes==FALSE & y.axes.label==FALSE){
       title(main = "", xlab = "", ylab = "")
       Axis(x, side=1, labels=FALSE, tick=FALSE)
@@ -2244,15 +2237,15 @@ scatter_fill <- function (x, y, z,xlim=c(min(x),max(x)),ylim=c(min(y),max(y)),zl
   else plot.title
   
   if(plot.legend==TRUE){
-    #par(las = las)
+    # par(las = las)
     par(las = 0)
     mar <- mar.orig
-    #mar[4L] <- mar[2L]
-    #mar[2L] <- 1
-    #mar[2L] <- 0.1
+    # mar[4L] <- mar[2L]
+    # mar[2L] <- 1
+    # mar[2L] <- 0.1
     par(mar = mar)
     #   
-    #plot.new()
+    # plot.new()
     if(!is.null(smallplot)){
       par(new = TRUE, pty = "m", plt = smallplot, err = -1)
     }
@@ -2272,8 +2265,8 @@ scatter_fill <- function (x, y, z,xlim=c(min(x),max(x)),ylim=c(min(y),max(y)),zl
   plot.window(xlim = xlim, ylim = ylim, xaxs = "i", yaxs = "i")
   par(bigpar)
   mar <- mar.orig
-  #mar[4L] <- 1
-  #mar[4L] <- 0.1
+  # mar[4L] <- 1
+  # mar[4L] <- 0.1
   par(mar = mar)
   
   par(las = 0)
@@ -2283,13 +2276,13 @@ scatter_fill <- function (x, y, z,xlim=c(min(x),max(x)),ylim=c(min(y),max(y)),zl
 }
 
 
-#compute shreve stream order
+# compute shreve stream order
 compute_flow_vol <- function(adjacency, example_network, scalevec=c(0.2, 1.5), logdata=FALSE){
-  #type="lengthprop": shreve_and_dist[first_stream] is defined by proportional to their lengths
-  #type="equal": shreve_and_dist[first_stream] is defined by equal weight (== shreve dist style)
-  #scalevec: weight scaling (default = (0.2,1.5)  (refer to O'Donnell method))
+  # type="lengthprop": shreve_and_dist[first_stream] is defined by proportional to their lengths
+  # type="equal": shreve_and_dist[first_stream] is defined by equal weight (== shreve dist style)
+  # scalevec: weight scaling (default = (0.2,1.5)  (refer to O'Donnell method))
   
-  #adjacency: adjacency object obtained from get_adjacency_stream
+  # adjacency: adjacency object obtained from get_adjacency_stream
   adj_mat <- as.matrix(adjacency$adjacency)
   
   shreve <- rep(0, nrow(adj_mat))
@@ -2304,14 +2297,14 @@ compute_flow_vol <- function(adjacency, example_network, scalevec=c(0.2, 1.5), l
   pointsin <- setdiff(pointsin, first_stream)
   
   while(length(pointsin)!=0){
-    #find next stream
-    #case 1: Y shape
+    # find next stream
+    # case 1: Y shape
     next_stream1 <- pointsin[which(sapply(pointsin, function(x) sum(adj_mat[first_stream,x])==2 ))]
     for(i in 1:length(next_stream1)){
       shreve[next_stream1[i]] <- sum(shreve[which(adj_mat[,next_stream1[i]]!=0)])
       shreve_and_dist[next_stream1[i]] <- sum(shreve_and_dist[which(adj_mat[,next_stream1[i]]!=0)])
     }
-    #case 2: 1 shape
+    # case 2: 1 shape
     next_stream2 <- pointsin[which(sapply(pointsin, function(x) sum(adj_mat[first_stream,x])==1 ) & sapply(pointsin, function(x) sum(adj_mat[,x])==1 ))]
     for(j in 1:length(next_stream2)){
       shreve[next_stream2[j]] <- sum(shreve[which(adj_mat[,next_stream2[j]]!=0)])
@@ -2320,11 +2313,11 @@ compute_flow_vol <- function(adjacency, example_network, scalevec=c(0.2, 1.5), l
     next_stream <- c(next_stream1, next_stream2)
     pointsin <- setdiff(pointsin, next_stream)
     first_stream <- c(first_stream, next_stream)
-    #print(pointsin)
+    # print(pointsin)
   }
   
-  #scaling
-  #weight_vec_candidate2 <- scales::rescale(log(weight_vec_candidate2$distweight), to=c(0.2, 1.5))
+  # scaling
+  # weight_vec_candidate2 <- scales::rescale(log(weight_vec_candidate2$distweight), to=c(0.2, 1.5))
   # if(logdata==TRUE){
   #   shreve_and_dist <- scales::rescale(log(sqrt(shreve_and_dist)), to=c(scalevec[1], scalevec[2]))
   #   #shreve_and_dist <- scales::rescale(log(shreve_and_dist), to=c(scalevec[1], scalevec[2]))
@@ -2336,7 +2329,9 @@ compute_flow_vol <- function(adjacency, example_network, scalevec=c(0.2, 1.5), l
 
 ## =============================================================================================== ##
 
-####### functions by myself ###########
+# ======================================= #
+#           functions by myself           #
+# ======================================= #
 # These functions are basically constructed by modifying existing functions of the "GWPCA" and "stpca" packages
 # for the purpose of analyzing river network data. 
 

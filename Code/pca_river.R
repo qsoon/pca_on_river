@@ -8,16 +8,16 @@ library(ggdendro)
 
 # The structure of this code follows the structure of the paper. 
 
-#############################
-## load Geum River network ##
-#############################
+# ========================= #
+#  load Geum River network  #
+# ========================= #
 shape_Geum <- readOGR("/home/kyu9510/pca_on_river/Data/ProcessedData/Geum.shp")
 
 source("/home/kyu9510/pca_on_river/Code/source.R", chdir = TRUE)
 binaryIDs_obj <- get_binaryIDs_stream(mouth_node=614 , shape_Geum) # defined in source.R, shape file needs RCH_ID, binaryID
 # river mouth : node 614, called Geumgang Gapmun (금강갑문)
 
-#수동으로 adjacency를 얻도록 만들어진 함수
+# get adjacency 
 adjacency <- get_adjacency_stream(binaryIDs_obj) # defined in source.R 
 
 shreve_order <- compute_shreve(adjacency) # defined in source.R 
@@ -26,9 +26,9 @@ shreve_order <- compute_shreve(adjacency) # defined in source.R
 ssn_Geum <- importSSN_stream(shreve_obj = shreve_order, location="Full", multipleplaces=TRUE) 
 
 
-###################################
-## compute spatial weight matrix ##
-###################################
+# =============================== #
+#  compute spatial weight matrix  #
+# =============================== #
 # afvcol="shreve" works well b/c shreve ratio = addfunccol ratio 
 spatial.wt_Geum <- createWeightS_SC(ssndata=ssn_Geum, afvcol="shreve", adjacency=adjacency) 
 
@@ -39,9 +39,9 @@ rownames(spatial.wt_Geum) <-
   as.character(ssn_Geum@obspoints@SSNPoints[[1]]@point.data['X'][[1]])
 
 
-##############################
-## data load and preprocess ##
-##############################
+# ========================== #
+#  data load and preprocess  #
+# ========================== #
 data <- readRDS("/home/kyu9510/pca_on_river/Data/ProcessedData/Geum2020(extended).RDS")
 # TN: Total nitrogen
 # temp: Water temperature 
@@ -57,7 +57,7 @@ data <- readRDS("/home/kyu9510/pca_on_river/Data/ProcessedData/Geum2020(extended
 data$normaldata_TOC <- data$normaldata_TOC["2012-12/2020-11",] # extract from December, 2012 to November, 2020
 head(data$normaldata_TOC)
 
-# delete unused point (Samgacheon (삼가천), Seokcheon (석천), Mihocheon4 (미호천4) 
+# delete unused point (Samgacheon (삼가천), Seokcheon (석천), Mihocheon4 (미호천4))
 # and Yudeungcheon A (유등천A) do not have observations)
 remove.cand <- which(colnames(data$normaldata_TOC)%in%c("삼가천", "석천", "미호천4", "유등천A"))
 data$normaldata_TOC <- data$normaldata_TOC[,-remove.cand ]
@@ -71,7 +71,7 @@ for(ii in 1:ncol(data$normaldata_TOC)){
 
 normaldata_TOC_log <- log(data$normaldata_TOC)
 
-#check basics
+# check basics
 data$eventplace$X[which(is.na(match(data$eventplace$X, colnames(data$normaldata_TOC))))]
 
 dim(data$normaldata_TOC)
@@ -95,9 +95,9 @@ normaldata_TOC_log['year'] <- format(as.Date(rownames(as.data.frame(normaldata_T
 
 
 
-##################################
-## annual summer avg T-mode PCA ##
-##################################
+# ============================== #
+#  annual summer avg T-mode PCA  #
+# ============================== #
 
 # yearly average summer data
 TOC_log_summer_year <- subset(aggregate(normaldata_TOC_log[endsWith(normaldata_TOC_log$season, "summer"),], 
@@ -137,9 +137,9 @@ colnames(spatial.wt_Geum) <- 1:127
 rownames(spatial.wt_Geum) <- 1:127
 
 
-####################################
-## compute temporal weight matrix ##
-####################################
+# ================================ #
+#  compute temporal weight matrix  #
+# ================================ #
 t_wt_rho <- vector(length = ncol(Y_avg_TOC_log_summer.Tmode.completedata))
 for(i in 1:ncol(Y_avg_TOC_log_summer.Tmode.completedata)){
   t_wt_rho[i] <- abs(as.numeric(arima(Y_avg_TOC_log_summer.Tmode.completedata[,i], order = c(1,0,0), method = "ML")[[1]][1]))
@@ -151,9 +151,9 @@ annually_temporal_summer.wt_Geum <- createWeightT(n = nrow(Y_avg_TOC_log_summer.
 
 
 
-################################
-## upstream distance d-matrix ##
-################################
+# ============================ #
+#  upstream distance d-matrix  #
+# ============================ #
 dmat <- matrix(0, nrow=nrow(spatial.wt_Geum), ncol=ncol(spatial.wt_Geum))
 rownames(dmat) <- rownames(spatial.wt_Geum) 
 colnames(dmat) <- colnames(spatial.wt_Geum)
@@ -180,9 +180,9 @@ for(i in 1 : nrow(dmat)){
 # plot(ssn_Geum, cex=0.8, col="red", xlab="lon", ylab="lat")
 
 
-###############################
-## flow-directed PCA results ##
-###############################
+# =========================== #
+#  flow-directed PCA results  #
+# =========================== #
 coords_Geum <- getSSNdata.frame(ssn_Geum, "Obs")[, c("경도.Degree.", "위도.Degree.")]
 colnames(coords_Geum) <- c("lon","lat")
 
@@ -226,9 +226,9 @@ plot_stpca_zoom(x = Y_avg_TOC_log_summer.Tmode.pca.all, plots = "glyph",
 
 
 
-##################
-## PCA on river ##
-##################
+# ====================== #
+#      PCA on river      #
+# ====================== #
 # spatial and temporal weights
 sp.wt <- expm::sqrtm(solve(spatial.wt_Geum))
 
@@ -333,9 +333,9 @@ plot_river(x = Y_avg_TOC_log_summer.Tmode.pca.all, plots = "info",
            river = shape_Geum, coords = coords_Geum)
 
 
-##########
-## CPCA ##
-##########
+# ====================== #
+#          CPCA          #
+# ====================== #
 
 # Flury's Hierarchy Model
 S <- array(NA, c(n.var, n.var, n.cls), 

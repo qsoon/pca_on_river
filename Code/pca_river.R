@@ -354,7 +354,7 @@ S <- array(NA, c(n.var, n.var, n.cls),
                            paste("Group",1:n.cls, sep = ""))) # sample covariance for each group 
 nvec <- vector(length=n.cls) # vector of sample size
 
-adjusted_data <- sp.wt %*% as.matrix(scale(dls@data[,1:n.var], center=TRUE)) %*% t.wt
+adjusted_data <- sp.wt %*% as.matrix(scale(dls@data[,1:n.var], center=TRUE, scale = FALSE)) %*% t.wt
 rownames(adjusted_data) <- rownames(dls@data[,1:n.var])
 colnames(adjusted_data) <- colnames(dls@data[,1:n.var])
 
@@ -383,7 +383,7 @@ for(i in 1:n.cls){
   B[,,i] <- t(solve(t.wt))%*%B.partial(covmats=S, nvec=nvec, B=pcpca.result.FG$B.cpc,
                                        commonvec.order = pcpca.result.FG$common_order, q=q)[,,i]
   score[dls$cluster.pca.river.pc12==i,] <- as.matrix(scale(dls@data[,1:n.var], 
-                                                           center=TRUE)[dls$cluster.pca.river.pc12==i,])%*%t.wt%*%
+                                                           center=TRUE, scale = FALSE)[dls$cluster.pca.river.pc12==i,])%*%t.wt%*%
     B.partial(covmats=S, nvec=nvec, B=pcpca.result.FG$B.cpc, commonvec.order = pcpca.result.FG$common_order, q=q)[,,i]
 }
 

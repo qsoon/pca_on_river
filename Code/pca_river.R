@@ -240,6 +240,7 @@ plot_stpca_zoom(x = Y_avg_TOC_log_summer.Tmode.pca.all, plots = "glyph",
 # ====================== #
 #      PCA on river      #
 # ====================== #
+
 # spatial and temporal weights
 sp.wt <- expm::sqrtm(solve(spatial.wt_Geum))
 

@@ -1,6 +1,8 @@
 # PCA on River networks
 
-This repo contains the source code for PCA on river networks. Especially, it analyzes the Geum River TOC data. 
+This repo contains the source code for PCA on river networks. Especially, it analyzes the Geum River TOC data.
+
+For the detail, please refer to our paper: [https://doi.org/10.1002/env.2753](https://doi.org/10.1002/env.2753).
 
 
 ## Description

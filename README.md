@@ -1,4 +1,4 @@
-# PCA on River networks
+# PCA on River Networks
 
 This repo contains the source code for PCA on river networks. Especially, it analyzes the Geum River TOC data.
 
@@ -30,3 +30,6 @@ The process described in `pca_river.R` is as follows.
 - Weight construction
 - Application of flow-directed PCA 
 - The proposed method
+
+## References
+Kim, K., Oh, H.-S. and Park, M. (2023). Principal component analysis for river network data: Use of spatiotemporal correlation and heterogeneous covariance structure. Environmetrics, 34(4), e2753.

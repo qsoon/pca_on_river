@@ -32,4 +32,4 @@ The process described in `pca_river.R` is as follows.
 - The proposed method
 
 ## References
-Kim, K., Oh, H.-S. and Park, M. (2023). Principal component analysis for river network data: Use of spatiotemporal correlation and heterogeneous covariance structure. Environmetrics, 34(4), e2753.
+Kim, K., Oh, H.-S. and Park, M. (2023). Principal component analysis for river network data: Use of spatiotemporal correlation and heterogeneous covariance structure. *Environmetrics*, 34(4), e2753.
